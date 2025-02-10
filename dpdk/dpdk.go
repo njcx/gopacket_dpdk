@@ -4,7 +4,6 @@ package dpdk
 #cgo CFLAGS: -m64 -pthread -O3 -march=native -I${DPDK_INCLUDE_PATH}
 #cgo LDFLAGS: -L${DPDK_LIB_PATH}  -ldpdk -lrte_eal -lrte_ethdev -lrte_mbuf -lrte_mempool
 #include "dpdk_wrapper.h"
-#include "dpdk_wrapper.h"
 #include "dpdk_bpf.h"
 */
 import "C"

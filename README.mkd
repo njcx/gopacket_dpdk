@@ -8,7 +8,7 @@ Krennmair <ak@synflood.at> (http://github.com/akrennmair/gopcap).
 
 ```bash
 
-export DPDK_INCLUDE_PATH=/usr/local/include/dpdk
+export DPDK_INCLUDE_PATH=/usr/include/dpdk
 export DPDK_LIB_PATH=/usr/lib/x86_64-linux-gnu
 
 go build
