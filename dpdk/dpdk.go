@@ -1,8 +1,8 @@
 package dpdk
 
 /*
-#cgo CFLAGS: -m64 -pthread -O3 -march=native -I${DPDK_INCLUDE_PATH}
-#cgo LDFLAGS: -L${DPDK_LIB_PATH}  -ldpdk -lrte_eal -lrte_ethdev -lrte_mbuf -lrte_mempool
+#cgo CFLAGS: -m64 -pthread -O3 -march=native -I/usr/include/dpdk
+#cgo LDFLAGS: -L/usr/lib/x86_64-linux-gnu  -ldpdk -lrte_eal -lrte_ethdev -lrte_mbuf -lrte_mempool  -lpcap
 #include "dpdk_wrapper.h"
 #include "dpdk_bpf.h"
 */
