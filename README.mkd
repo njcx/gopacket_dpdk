@@ -6,8 +6,11 @@ See doc.go for more details.
 Originally forked from the gopcap project written by Andreas
 Krennmair <ak@synflood.at> (http://github.com/akrennmair/gopcap).
 
+```bash
 
 export DPDK_INCLUDE_PATH=/usr/local/include/dpdk
 export DPDK_LIB_PATH=/usr/lib/x86_64-linux-gnu
 
 go build
+
+```
