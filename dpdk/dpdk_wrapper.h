@@ -1,9 +1,9 @@
 #ifndef DPDK_WRAPPER_H
 #define DPDK_WRAPPER_H
 
-#include <rte_eal.h>
-#include <rte_ethdev.h>
-#include <rte_mbuf.h>
+#include <dpdk/rte_eal.h>
+#include <dpdk/rte_ethdev.h>
+#include <dpdk/rte_mbuf.h>
 
 // 初始化DPDK环境
 int init_dpdk(int argc, char **argv);
