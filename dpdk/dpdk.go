@@ -1,8 +1,6 @@
 package dpdk
 
 /*
-#cgo CFLAGS: -I/usr/local/include/dpdk -I/usr/include/dpdk -I/usr/include/x86_64-linux-gnu/dpdk
-#cgo LDFLAGS: -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -ldpdk -lnuma -ldl -lpcap
 #include "dpdk_wrapper.h"
 #include "dpdk_bpf.h"
 */
@@ -52,11 +50,25 @@ func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 	}
 
 	// 创建内存池
+	//mempoolName := C.CString(fmt.Sprintf("mbuf_pool_%d", portID))
+	//defer C.free(unsafe.Pointer(mempoolName))
+
+	//handle.mempool = C.create_mempool(mempoolName, NUM_MBUFS, MBUF_CACHE_SIZE,
+	//	0, C.RTE_MBUF_DEFAULT_BUF_SIZE, C.rte_socket_id())
+	//if handle.mempool == nil {
+	//return nil, fmt.Errorf("创建内存池失败")
+	//}
+
 	mempoolName := C.CString(fmt.Sprintf("mbuf_pool_%d", portID))
 	defer C.free(unsafe.Pointer(mempoolName))
 
-	handle.mempool = C.create_mempool(mempoolName, NUM_MBUFS, MBUF_CACHE_SIZE,
-		0, C.RTE_MBUF_DEFAULT_BUF_SIZE, C.rte_socket_id())
+	handle.mempool = C.create_mempool(mempoolName,
+		C.uint(8191),     // number of elements
+		C.uint(128),      // cache size
+		0,                // private data size
+		C.uint16_t(2048), // data room size
+		C.rte_socket_id())
+
 	if handle.mempool == nil {
 		return nil, fmt.Errorf("创建内存池失败")
 	}

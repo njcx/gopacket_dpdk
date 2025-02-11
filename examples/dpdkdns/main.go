@@ -6,6 +6,7 @@ import (
 	"github.com/njcx/gopacket/dpdk"
 	"github.com/njcx/gopacket/layers"
 	"log"
+	"os"
 )
 
 func processPacket(data []byte) {
@@ -59,6 +60,11 @@ func processPacket(data []byte) {
 
 func main() {
 	// 初始化DPDK
+
+	if os.Geteuid() != 0 {
+		log.Fatal(" 需要root权限执行")
+	}
+
 	if err := dpdk.InitDPDK(); err != nil {
 		log.Fatalf("初始化DPDK失败: %v", err)
 	}
