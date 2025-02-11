@@ -1,8 +1,8 @@
 package dpdk
 
 /*
-#cgo CFLAGS: -I/usr/local/include/dpdk -I/usr/include/dpdk
-#cgo LDFLAGS: -L/usr/local/lib -ldpdk -lnuma -ldl -lpcap
+#cgo CFLAGS: -I/usr/local/include/dpdk -I/usr/include/dpdk -I/usr/include/x86_64-linux-gnu/dpdk
+#cgo LDFLAGS: -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -ldpdk -lnuma -ldl -lpcap
 #include "dpdk_wrapper.h"
 #include "dpdk_bpf.h"
 */
