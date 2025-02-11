@@ -1,8 +1,8 @@
 package dpdk
 
 /*
-#cgo CFLAGS: -m64 -pthread -O3 -march=native
-#cgo LDFLAGS:  -lrte_eal -lrte_ethdev -lrte_mbuf -lrte_mempool  -lpcap
+#cgo CFLAGS: -I/usr/local/include/dpdk -I/usr/include/dpdk
+#cgo LDFLAGS: -L/usr/local/lib -ldpdk -lnuma -ldl -lpcap
 #include "dpdk_wrapper.h"
 #include "dpdk_bpf.h"
 */
@@ -105,8 +105,8 @@ func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 		// 处理接收到的数据包
 		for i := 0; i < int(nb_rx); i++ {
 			mbuf := mbufs[i]
-			data := C.rte_pktmbuf_mtod(mbuf, *C.char)
-			length := C.rte_pktmbuf_data_len(mbuf)
+			data := C.get_mbuf_data(mbuf)
+			length := C.get_mbuf_data_len(mbuf)
 
 			// 应用BPF过滤器
 			if h.bpfFilter != nil {
@@ -114,7 +114,7 @@ func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 					(*C.uchar)(unsafe.Pointer(data)),
 					C.uint32_t(length)) == 0 {
 					// 包不匹配过滤器，跳过处理
-					C.rte_pktmbuf_free(mbuf)
+					C.free_mbuf(mbuf)
 					continue
 				}
 			}
@@ -126,7 +126,7 @@ func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 			callback(goData)
 
 			// 释放mbuf
-			C.rte_pktmbuf_free(mbuf)
+			C.free_mbuf(mbuf)
 		}
 	}
 }

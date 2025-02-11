@@ -20,27 +20,40 @@ func processPacket(data []byte) {
 	// 解析IP层
 	ipLayer := packet.Layer(layers.LayerTypeIPv4)
 	if ipLayer != nil {
-		ip, _ := ipLayer.(*layers.IPv4)
+		ip, ok := ipLayer.(*layers.IPv4)
+		if !ok {
+			fmt.Println("无法解析IPv4层")
+			return
+		}
 		fmt.Printf("源IP: %s, 目标IP: %s\n", ip.SrcIP, ip.DstIP)
 	}
-	var resultdata = make(map[string]string)
+
+	var resultDataList []map[string]string
 	// 解析DNS层
 	dnsLayer := packet.Layer(layers.LayerTypeDNS)
 	if dnsLayer != nil {
-		dns, _ := dnsLayer.(*layers.LayerTypeDNS)
+		dns, ok := dnsLayer.(*layers.DNS)
+		if !ok {
+			fmt.Println("无法解析DNS层")
+			return
+		}
 		if !dns.QR {
 			for _, dnsQuestion := range dns.Questions {
+				if len(dns.Questions) == 0 {
+					continue
+				}
+				resultdata := make(map[string]string)
 				resultdata["source"] = "dns"
-				resultdata["src"] = dnsn.SrcIP
-				resultdata["dst"] = dns.DstIP
-				resultdata["domain"] = string(dnsQuestion.Name)
-				resultdata["type"] = dnsQuestion.Type.String()
-				resultdata["class"] = dnsQuestion.Class.String()
-				fmt.Println(resultdata)
 
+				resultdata["domain"] = string(dnsQuestion.Name)
+				resultdata["type"] = string(dnsQuestion.Type)
+				resultdata["class"] = string(dnsQuestion.Class)
+				resultDataList = append(resultDataList, resultdata)
+			}
+			for _, data := range resultDataList {
+				fmt.Println(data)
 			}
 		}
-
 	}
 }
 

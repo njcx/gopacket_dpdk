@@ -20,13 +20,7 @@ int init_bpf_filter(dpdk_bpf_filter *filter, const char *expression,
         return -1;
     }
 
-    // 优化BPF程序
-    if (pcap_optimize(&filter->prog) < 0) {
-        filter->optimized = 0;
-    } else {
-        filter->optimized = 1;
-    }
-
+    filter->optimized = 1;
     pcap_close(p);
     return 0;
 }

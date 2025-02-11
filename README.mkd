@@ -8,9 +8,6 @@ Krennmair <ak@synflood.at> (http://github.com/akrennmair/gopcap).
 
 ```bash
 
-export DPDK_INCLUDE_PATH=/usr/include/dpdk
-export DPDK_LIB_PATH=/usr/lib/x86_64-linux-gnu
-
-go build
+CGO_CFLAGS="-std=gnu99 -I/usr/local/include/dpdk" CGO_LDFLAGS="-L/usr/local/lib -ldpdk -lnuma -ldl -lpcap" go build
 
 ```
