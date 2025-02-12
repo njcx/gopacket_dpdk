@@ -55,6 +55,10 @@ func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 		}
 	}
 
+	if ret := C.init_port(C.uint16_t(portID)); ret != 0 {
+		return nil, fmt.Errorf("端口初始化失败: %d", ret)
+	}
+
 	// 启动端口
 	if ret := C.start_port(C.uint16_t(portID)); ret != 0 {
 		return nil, fmt.Errorf("端口启动失败: %d", ret)

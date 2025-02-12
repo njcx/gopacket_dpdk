@@ -15,18 +15,20 @@ static const struct rte_eth_conf port_conf_default = {
 int init_dpdk(int argc, char **argv) {
 
     int ret;
-    unsigned nb_ports;
-    uint16_t portid;
-    uint16_t i;
-    struct rte_mempool *mbuf_pool = NULL;
-    struct rte_eth_conf port_conf = port_conf_default;
-
-    // 初始化DPDK环境
     ret = rte_eal_init(argc, argv);
     if (ret < 0) {
         printf("Error: Cannot init EAL\n");
         return -1;
     }
+     return ret;
+}
+
+int init_port(uint16_t portid) {
+    int ret;
+    unsigned nb_ports;
+    uint16_t i;
+    struct rte_mempool *mbuf_pool = NULL;
+    struct rte_eth_conf port_conf = port_conf_default;
 
     nb_ports = rte_eth_dev_count_avail();
     if (nb_ports < 1) {
@@ -44,7 +46,6 @@ int init_dpdk(int argc, char **argv) {
         return -1;
     }
 
-    portid = 0;
     ret = rte_eth_dev_configure(portid, 1, 1, &port_conf);
     if (ret < 0) {
         printf("Warning: Cannot configure port %u\n", portid);
@@ -66,7 +67,11 @@ int init_dpdk(int argc, char **argv) {
         printf("Warning: Cannot setup TX queue for port %u\n", portid);
         return -1;
     }
+
+    return 0;
 }
+
+
 
 
 int start_port(uint16_t port_id) {
