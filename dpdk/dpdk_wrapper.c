@@ -15,9 +15,11 @@ static const struct rte_eth_conf port_conf_default = {
 int init_dpdk(int argc, char **argv) {
 
     int ret;
+
     ret = rte_eal_init(argc, argv);
+    printf("DPDK Version: %s\n", rte_version());
     if (ret < 0) {
-        printf("Error: Cannot init EAL\n");
+        printf("Error: Cannot init EAL: %s\n", rte_strerror(rte_errno));
         return -1;
     }
      return ret;
@@ -31,6 +33,7 @@ int init_port(uint16_t port_id) {
     struct rte_eth_conf port_conf = port_conf_default;
 
     nb_ports = rte_eth_dev_count_avail();
+    printf("Number of available ports: %u\n", nb_ports);
     if (nb_ports < 1) {
         printf("Warning: No Ethernet ports available\n");
         return -1;
