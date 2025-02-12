@@ -8,6 +8,7 @@ Krennmair <ak@synflood.at> (http://github.com/akrennmair/gopcap).
 
 ```bash
 
-CGO_CFLAGS="-std=gnu99 -I/usr/local/include/dpdk" CGO_LDFLAGS="-L/usr/local/lib -ldpdk -lnuma -ldl -lpcap" go build
+CGO_CFLAGS="-msse4.2 -fno-strict-aliasing  -I/usr/local/include/dpdk" CGO_LDFLAGS="-L/usr/local/lib -ldpdk -lnuma -ldl -lpcap" go build
+
 
 ```

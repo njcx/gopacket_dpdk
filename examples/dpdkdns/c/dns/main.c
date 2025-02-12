@@ -84,7 +84,6 @@ static void process_dns_packet(struct rte_mbuf *mbuf) {
     struct rte_udp_hdr *udp_hdr;
     struct dns_hdr *dns_hdr;
     const unsigned char *reader;
-    int stop;
 
     // 获取以太网头部
     eth_hdr = rte_pktmbuf_mtod(mbuf, struct rte_ether_hdr *);

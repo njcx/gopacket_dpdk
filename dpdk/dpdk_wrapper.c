@@ -23,7 +23,7 @@ int init_dpdk(int argc, char **argv) {
      return ret;
 }
 
-int init_port(uint16_t portid) {
+int init_port(uint16_t port_id) {
     int ret;
     unsigned nb_ports;
     uint16_t i;
@@ -46,25 +46,25 @@ int init_port(uint16_t portid) {
         return -1;
     }
 
-    ret = rte_eth_dev_configure(portid, 1, 1, &port_conf);
+    ret = rte_eth_dev_configure(port_id, 1, 1, &port_conf);
     if (ret < 0) {
-        printf("Warning: Cannot configure port %u\n", portid);
+        printf("Warning: Cannot configure port %u\n", port_id);
         return -1;
     }
 
-    ret = rte_eth_rx_queue_setup(portid, 0, RX_RING_SIZE,
-                                 rte_eth_dev_socket_id(portid),
+    ret = rte_eth_rx_queue_setup(port_id, 0, RX_RING_SIZE,
+                                 rte_eth_dev_socket_id(port_id),
                                  NULL, mbuf_pool);
     if (ret < 0) {
-        printf("Warning: Cannot setup RX queue for port %u\n", portid);
+        printf("Warning: Cannot setup RX queue for port %u\n", port_id);
         return -1;
     }
 
-    ret = rte_eth_tx_queue_setup(portid, 0, TX_RING_SIZE,
-                                 rte_eth_dev_socket_id(portid),
+    ret = rte_eth_tx_queue_setup(port_id, 0, TX_RING_SIZE,
+                                 rte_eth_dev_socket_id(port_id),
                                  NULL);
     if (ret < 0) {
-        printf("Warning: Cannot setup TX queue for port %u\n", portid);
+        printf("Warning: Cannot setup TX queue for port %u\n", port_id);
         return -1;
     }
 
@@ -81,6 +81,7 @@ int start_port(uint16_t port_id) {
     }
 
     rte_eth_promiscuous_enable(port_id);
+    printf("Port %u started successfully\n", port_id);
     return 0;
 }
 
