@@ -11,15 +11,11 @@ import (
 )
 
 const (
-	RX_RING_SIZE    = 1024
-	TX_RING_SIZE    = 1024
-	NUM_MBUFS       = 8192
-	MBUF_CACHE_SIZE = 256
-	BURST_SIZE      = 32
+	BURST_SIZE = 32
 )
 
 func InitDPDK() error {
-	args := []string{"", "-l", "0-3", "-n", "4", "--proc-type=auto"}
+	args := []string{""}
 	argc := C.int(len(args))
 
 	// 将Go字符串转换为C字符串数组
@@ -34,11 +30,11 @@ func InitDPDK() error {
 		return fmt.Errorf("DPDK初始化失败: %d", ret)
 	}
 	return nil
+
 }
 
 type DPDKHandle struct {
 	portID    uint16
-	mempool   *C.struct_rte_mempool
 	bpfFilter *C.dpdk_bpf_filter
 }
 
@@ -49,16 +45,6 @@ func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 		bpfFilter: &C.dpdk_bpf_filter{},
 	}
 
-	// 创建内存池
-	mempoolName := C.CString(fmt.Sprintf("mbuf_pool_%d", portID))
-	defer C.free(unsafe.Pointer(mempoolName))
-
-	handle.mempool = C.create_mempool(mempoolName, NUM_MBUFS, MBUF_CACHE_SIZE,
-		0, C.RTE_MBUF_DEFAULT_BUF_SIZE, C.rte_socket_id())
-	if handle.mempool == nil {
-		return nil, fmt.Errorf("创建内存池失败")
-	}
-
 	// 初始化BPF过滤器
 	if bpfExpression != "" {
 		cExpr := C.CString(bpfExpression)
@@ -67,11 +53,6 @@ func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 		if ret := C.init_bpf_filter(handle.bpfFilter, cExpr, 0xffffff00); ret != 0 {
 			return nil, fmt.Errorf("BPF过滤器初始化失败: %d", ret)
 		}
-	}
-
-	// 初始化端口
-	if ret := C.init_port(C.uint16_t(portID), RX_RING_SIZE, TX_RING_SIZE); ret != 0 {
-		return nil, fmt.Errorf("端口初始化失败: %d", ret)
 	}
 
 	// 启动端口
