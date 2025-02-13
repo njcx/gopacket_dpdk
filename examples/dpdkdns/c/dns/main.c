@@ -6,6 +6,7 @@
 #include <rte_ethdev.h>
 #include <rte_mbuf.h>
 #include <rte_ether.h>
+#include <rte_version.h>
 #include <rte_ip.h>
 #include <rte_udp.h>
 
@@ -133,8 +134,9 @@ int main(int argc, char *argv[]) {
     if (ret < 0) {
         rte_exit(EXIT_FAILURE, "Cannot init EAL\n");
     }
-
+    printf("DPDK Version: %s\n", rte_version());
     nb_ports = rte_eth_dev_count_avail();
+    printf("Number of available ports: %u\n", nb_ports);
     if (nb_ports < 1) {
         rte_exit(EXIT_FAILURE, "No Ethernet ports\n");
     }
