@@ -1,7 +1,5 @@
 // dpdk_bpf.c
 #include "dpdk_bpf.h"
-#include <stdio.h>
-#include <string.h>
 
 int init_bpf_filter(dpdk_bpf_filter *filter, const char *expression,
                    uint32_t netmask) {

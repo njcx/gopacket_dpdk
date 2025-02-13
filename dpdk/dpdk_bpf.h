@@ -2,8 +2,12 @@
 #ifndef DPDK_BPF_H
 #define DPDK_BPF_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
 #include <pcap/pcap.h>
 #include <pcap/bpf.h>
+
 
 // BPF过滤器结构
 typedef struct {

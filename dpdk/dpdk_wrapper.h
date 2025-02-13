@@ -4,7 +4,7 @@
 #include <rte_eal.h>
 #include <rte_ethdev.h>
 #include <rte_mbuf.h>
-
+#include <rte_version.h>
 
 int init_dpdk(int argc, char **argv);
 
