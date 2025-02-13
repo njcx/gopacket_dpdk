@@ -6,13 +6,11 @@ int init_bpf_filter(dpdk_bpf_filter *filter, const char *expression,
     pcap_t *p;
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    // 创建临时pcap句柄用于编译BPF表达式
     p = pcap_open_dead(DLT_EN10MB, 65535);
     if (p == NULL) {
         return -1;
     }
 
-    // 编译过滤器表达式
     if (pcap_compile(p, &filter->prog, expression, 1, netmask) < 0) {
         pcap_close(p);
         return -1;
@@ -29,7 +27,6 @@ int apply_bpf_filter(dpdk_bpf_filter *filter, const unsigned char *packet,
     unsigned int res;
 
     if (!filter->optimized) {
-        // 如果未优化，返回匹配以避免丢包
         return 1;
     }
 

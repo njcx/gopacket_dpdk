@@ -14,6 +14,13 @@ const (
 	BURST_SIZE = 32
 )
 
+type DPDKHandle struct {
+	portID    uint16
+	bpfFilter *C.dpdk_bpf_filter
+
+	Initialized bool
+}
+
 func InitDPDK() error {
 	args := []string{""}
 	argc := C.int(len(args))
@@ -27,54 +34,50 @@ func InitDPDK() error {
 
 	ret := C.init_dpdk(argc, (**C.char)(&cargs[0]))
 	if ret < 0 {
-		return fmt.Errorf("DPDK初始化失败: %d", ret)
+		return fmt.Errorf("DPDK initialization failed: %d", ret)
 	}
 	return nil
 
 }
 
-type DPDKHandle struct {
-	portID    uint16
-	bpfFilter *C.dpdk_bpf_filter
-}
-
 // 创建新的DPDK处理器，包含BPF过滤器
 func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
+
 	handle := &DPDKHandle{
 		portID:    portID,
 		bpfFilter: &C.dpdk_bpf_filter{},
 	}
 
-	// 初始化BPF过滤器
 	if bpfExpression != "" {
 		cExpr := C.CString(bpfExpression)
 		defer C.free(unsafe.Pointer(cExpr))
-
 		if ret := C.init_bpf_filter(handle.bpfFilter, cExpr, 0xffffff00); ret != 0 {
-			return nil, fmt.Errorf("BPF过滤器初始化失败: %d", ret)
+			return nil, fmt.Errorf("BPF filter initialization failed: %d", ret)
 		}
 	}
 
 	if ret := C.init_port(C.uint16_t(portID)); ret != 0 {
-		return nil, fmt.Errorf("端口初始化失败: %d", ret)
+		return nil, fmt.Errorf("port initialization failed: %d", ret)
 	}
 
-	// 启动端口
 	if ret := C.start_port(C.uint16_t(portID)); ret != 0 {
-		return nil, fmt.Errorf("端口启动失败: %d", ret)
+		return nil, fmt.Errorf("port start failed: %d", ret)
 	}
-
+	handle.Initialized = true
 	return handle, nil
 }
 
-// 清理资源
 func (h *DPDKHandle) Close() {
 	if h.bpfFilter != nil {
 		C.free_bpf_filter(h.bpfFilter)
 	}
+	if h.Initialized {
+		C.stop_port(C.uint16_t(h.portID))
+		C.cleanup_dpdk()
+	}
+
 }
 
-// 接收和过滤数据包
 func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 	burstSize := C.uint16_t(BURST_SIZE)
 	mbufs := make([]*C.struct_rte_mbuf, BURST_SIZE)
@@ -112,4 +115,13 @@ func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 			C.free_mbuf(mbuf)
 		}
 	}
+}
+
+func (h *DPDKHandle) IsPortUp() bool {
+	status := C.get_port_status(C.uint16_t(h.portID))
+	return status > 0
+}
+
+func (h *DPDKHandle) PrintInfo() {
+	C.print_port_info(C.uint16_t(h.portID))
 }
