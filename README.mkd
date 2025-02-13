@@ -10,7 +10,11 @@ Krennmair <ak@synflood.at> (http://github.com/akrennmair/gopcap).
 
 dpdk >= DPDK 20.02.1
 
-#  yum install -y libpcap-devel gcc gcc-c++ make meson ninja
+kernel >= 3.10.0
+
+
+#  yum install -y libpcap-devel gcc gcc-c++ make meson ninja  numactl-devel  numactl  net-tools pciutils
+#  yum install kernel-devel-$(uname -r) kernel-headers-$(uname -r) -y
 #  wget http://fast.dpdk.org/rel/dpdk-20.11.10.tar.xz
 #  tar -Jxvf dpdk-20.11.10.tar.xz
 #  cd dpdk-stable-20.11.10 && meson build && cd build && ninja && ninja install
