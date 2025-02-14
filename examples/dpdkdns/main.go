@@ -52,7 +52,7 @@ func processPacket(data []byte) {
 				resultDataList = append(resultDataList, resultdata)
 			}
 			for _, data := range resultDataList {
-				fmt.Println(data)
+				fmt.Printf("%+v\n", data)
 			}
 		}
 	}
