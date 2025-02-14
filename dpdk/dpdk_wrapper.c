@@ -87,13 +87,6 @@ int start_port(uint16_t port_id) {
         return ret;
     }
     rte_eth_promiscuous_enable(port_id);
-    struct rte_eth_link link;
-    rte_eth_link_get_nowait(port_id, &link);
-    if (!link.link_status) {
-        printf("Warning: Port %u link down\n", port_id);
-        return -1;
-    }
-
     printf("Port %u started successfully\n", port_id);
     return 0;
 }
