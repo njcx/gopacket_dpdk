@@ -43,7 +43,7 @@ int init_port(uint16_t port_id) {
         printf("Invalid port ID %u\n", port_id);
         return -1;
     }
-    // 分配内存池
+
     mbuf_pool = rte_pktmbuf_pool_create("MBUF_POOL", NUM_MBUFS,
                                         MBUF_CACHE_SIZE, 0,
                                         RTE_MBUF_DEFAULT_BUF_SIZE,
@@ -101,13 +101,11 @@ void stop_port(uint16_t port_id) {
 
 void cleanup_dpdk(void) {
     printf("Cleaning up DPDK resources...\n");
-    // 释放内存池
     if (mbuf_pool != NULL) {
         rte_mempool_free(mbuf_pool);
         mbuf_pool = NULL;
     }
 
-    // 清理EAL
     rte_eal_cleanup();
     printf("DPDK cleanup completed\n");
 }
@@ -119,7 +117,6 @@ uint16_t receive_packets(uint16_t port_id, struct rte_mbuf **rx_pkts, uint16_t n
 uint16_t send_packets(uint16_t port_id, struct rte_mbuf **tx_pkts, uint16_t nb_pkts) {
     return rte_eth_tx_burst(port_id, 0, tx_pkts, nb_pkts);
 }
-
 
 
 void* get_mbuf_data(struct rte_mbuf* mbuf) {
