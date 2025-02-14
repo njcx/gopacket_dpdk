@@ -4,9 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
-
-import ()
+package gopacket_dpdk
 
 // SerializableLayer allows its implementations to be written out as a set of bytes,
 // so those bytes may be sent on the wire or otherwise used by the caller.
@@ -47,7 +45,7 @@ type SerializeOptions struct {
 	ComputeChecksums bool
 }
 
-// SerializeBuffer is a helper used by gopacket for writing out packet layers.
+// SerializeBuffer is a helper used by gopacket_dpdk for writing out packet layers.
 // SerializeBuffer starts off as an empty []byte.  Subsequent calls to PrependBytes
 // return byte slices before the current Bytes(), AppendBytes returns byte
 // slices after.
@@ -65,9 +63,9 @@ type SerializeOptions struct {
 // byte slices returned by any previous Bytes() call (the same buffer is
 // reused).
 //
-//  1) Reusing a write buffer is generally much faster than creating a new one,
+//  1. Reusing a write buffer is generally much faster than creating a new one,
 //     and with the default implementation it avoids additional memory allocations.
-//  2) If a byte slice from a previous Bytes() call will continue to be used,
+//  2. If a byte slice from a previous Bytes() call will continue to be used,
 //     it's better to create a new SerializeBuffer.
 //
 // The Clear method is specifically designed to minimize memory allocations for
@@ -177,12 +175,13 @@ func (w *serializeBuffer) Clear() error {
 // invalidates all slices previously returned by w.Bytes()
 //
 // Example:
-//   buf := gopacket.NewSerializeBuffer()
-//   opts := gopacket.SerializeOptions{}
-//   gopacket.SerializeLayers(buf, opts, a, b, c)
-//   firstPayload := buf.Bytes()  // contains byte representation of a(b(c))
-//   gopacket.SerializeLayers(buf, opts, d, e, f)
-//   secondPayload := buf.Bytes()  // contains byte representation of d(e(f)). firstPayload is now invalidated, since the SerializeLayers call Clears buf.
+//
+//	buf := gopacket_dpdk.NewSerializeBuffer()
+//	opts := gopacket_dpdk.SerializeOptions{}
+//	gopacket_dpdk.SerializeLayers(buf, opts, a, b, c)
+//	firstPayload := buf.Bytes()  // contains byte representation of a(b(c))
+//	gopacket_dpdk.SerializeLayers(buf, opts, d, e, f)
+//	secondPayload := buf.Bytes()  // contains byte representation of d(e(f)). firstPayload is now invalidated, since the SerializeLayers call Clears buf.
 func SerializeLayers(w SerializeBuffer, opts SerializeOptions, layers ...SerializableLayer) error {
 	w.Clear()
 	for i := len(layers) - 1; i >= 0; i-- {

@@ -14,7 +14,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/njcx/gopacket/pcap"
+	"github.com/njcx/gopacket_dpdk/pcap"
 	"log"
 	"net"
 	"net/http"

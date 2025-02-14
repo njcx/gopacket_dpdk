@@ -5,11 +5,11 @@
 // tree.
 
 /*
-Package pcap allows users of gopacket to read packets off the wire or from
+Package pcap allows users of gopacket_dpdk to read packets off the wire or from
 pcap files.
 
 This package is meant to be used with its parent,
-http://github.com/njcx/gopacket, although it can also be used independently
+http://github.com/njcx/gopacket_dpdk, although it can also be used independently
 if you just want to get packet data from the wire.
 
 # Reading PCAP Files
@@ -19,7 +19,7 @@ The following code can be used to read in data from a pcap file.
 	if handle, err := pcap.OpenOffline("/path/to/my/file"); err != nil {
 	  panic(err)
 	} else {
-	  packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	  packetSource := gopacket_dpdk.NewPacketSource(handle, handle.LinkType())
 	  for packet := range packetSource.Packets() {
 	    handlePacket(packet)  // Do something with a packet here.
 	  }
@@ -35,7 +35,7 @@ The following code can be used to read in data from a live device, in this case
 	} else if err := handle.SetBPFFilter("tcp and port 80"); err != nil {  // optional
 	  panic(err)
 	} else {
-	  packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	  packetSource := gopacket_dpdk.NewPacketSource(handle, handle.LinkType())
 	  for packet := range packetSource.Packets() {
 	    handlePacket(packet)  // Do something with a packet here.
 	  }
@@ -96,7 +96,7 @@ errors.
 
 # PCAP File Writing
 
-This package does not implement PCAP file writing.  However, gopacket/pcapgo
+This package does not implement PCAP file writing.  However, gopacket_dpdk/pcapgo
 does!  Look there if you'd like to write PCAP files.
 */
 package pcap

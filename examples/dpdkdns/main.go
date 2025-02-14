@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/dpdk"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"log"
 	"os"
 )
 
 func processPacket(data []byte) {
-	packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
+	packet := gopacket_dpdk.NewPacket(data, layers.LayerTypeEthernet, gopacket_dpdk.Default)
 
 	ethernetLayer := packet.Layer(layers.LayerTypeEthernet)
 	if ethernetLayer != nil {

@@ -8,7 +8,7 @@ package layers
 
 import (
 	_ "fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"reflect"
 	"testing"
 )
@@ -33,11 +33,11 @@ var testPacketUSB0 = []byte{
 }
 
 func TestPacketUSB0(t *testing.T) {
-	p := gopacket.NewPacket(testPacketUSB0, LinkTypeLinuxUSB, gopacket.Default)
+	p := gopacket_dpdk.NewPacket(testPacketUSB0, LinkTypeLinuxUSB, gopacket_dpdk.Default)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeUSB, LayerTypeUSBInterrupt}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeUSB, LayerTypeUSBInterrupt}, t)
 
 	if got, ok := p.Layer(LayerTypeUSB).(*USB); ok {
 		want := &USB{
@@ -69,6 +69,6 @@ func TestPacketUSB0(t *testing.T) {
 }
 func BenchmarkDecodePacketUSB0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testPacketUSB0, LinkTypeLinuxUSB, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testPacketUSB0, LinkTypeLinuxUSB, gopacket_dpdk.NoCopy)
 	}
 }

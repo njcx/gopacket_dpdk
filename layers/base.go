@@ -7,7 +7,7 @@
 package layers
 
 import (
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // BaseLayer is a convenience struct which implements the LayerData and
@@ -30,19 +30,19 @@ func (b *BaseLayer) LayerContents() []byte { return b.Contents }
 func (b *BaseLayer) LayerPayload() []byte { return b.Payload }
 
 type layerDecodingLayer interface {
-	gopacket.Layer
-	DecodeFromBytes([]byte, gopacket.DecodeFeedback) error
-	NextLayerType() gopacket.LayerType
+	gopacket_dpdk.Layer
+	DecodeFromBytes([]byte, gopacket_dpdk.DecodeFeedback) error
+	NextLayerType() gopacket_dpdk.LayerType
 }
 
-func decodingLayerDecoder(d layerDecodingLayer, data []byte, p gopacket.PacketBuilder) error {
+func decodingLayerDecoder(d layerDecodingLayer, data []byte, p gopacket_dpdk.PacketBuilder) error {
 	err := d.DecodeFromBytes(data, p)
 	if err != nil {
 		return err
 	}
 	p.AddLayer(d)
 	next := d.NextLayerType()
-	if next == gopacket.LayerTypeZero {
+	if next == gopacket_dpdk.LayerTypeZero {
 		return nil
 	}
 	return p.NextDecoder(next)

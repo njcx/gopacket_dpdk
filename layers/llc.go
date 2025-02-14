@@ -8,7 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // LLC is the layer used for 802.2 Logical Link Control headers.
@@ -22,8 +22,8 @@ type LLC struct {
 	Control uint16
 }
 
-// LayerType returns gopacket.LayerTypeLLC.
-func (l *LLC) LayerType() gopacket.LayerType { return LayerTypeLLC }
+// LayerType returns gopacket_dpdk.LayerTypeLLC.
+func (l *LLC) LayerType() gopacket_dpdk.LayerType { return LayerTypeLLC }
 
 // SNAP is used inside LLC.  See
 // http://standards.ieee.org/getieee802/download/802-2001.pdf.
@@ -38,10 +38,10 @@ type SNAP struct {
 	Type               EthernetType
 }
 
-// LayerType returns gopacket.LayerTypeSNAP.
-func (s *SNAP) LayerType() gopacket.LayerType { return LayerTypeSNAP }
+// LayerType returns gopacket_dpdk.LayerTypeSNAP.
+func (s *SNAP) LayerType() gopacket_dpdk.LayerType { return LayerTypeSNAP }
 
-func decodeLLC(data []byte, p gopacket.PacketBuilder) error {
+func decodeLLC(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	l := &LLC{
 		DSAP:    data[0] & 0xFE,
 		IG:      data[0]&0x1 != 0,
@@ -61,10 +61,10 @@ func decodeLLC(data []byte, p gopacket.PacketBuilder) error {
 	if l.DSAP == 0xAA && l.SSAP == 0xAA {
 		return p.NextDecoder(LayerTypeSNAP)
 	}
-	return p.NextDecoder(gopacket.DecodeUnknown)
+	return p.NextDecoder(gopacket_dpdk.DecodeUnknown)
 }
 
-func decodeSNAP(data []byte, p gopacket.PacketBuilder) error {
+func decodeSNAP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	s := &SNAP{
 		OrganizationalCode: data[:3],
 		Type:               EthernetType(binary.BigEndian.Uint16(data[3:5])),

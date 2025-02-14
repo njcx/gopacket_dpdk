@@ -9,7 +9,7 @@ package layers
 import (
 	"encoding/binary"
 
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 type PFDirection uint8
@@ -37,7 +37,7 @@ type PFLog struct {
 	// The remainder is padding
 }
 
-func (pf *PFLog) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (pf *PFLog) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	pf.Length = data[0]
 	pf.Family = ProtocolFamily(data[1])
 	pf.Action = data[2]
@@ -57,15 +57,15 @@ func (pf *PFLog) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 }
 
 // LayerType returns layers.LayerTypePFLog
-func (pf *PFLog) LayerType() gopacket.LayerType { return LayerTypePFLog }
+func (pf *PFLog) LayerType() gopacket_dpdk.LayerType { return LayerTypePFLog }
 
-func (pf *PFLog) CanDecode() gopacket.LayerClass { return LayerTypePFLog }
+func (pf *PFLog) CanDecode() gopacket_dpdk.LayerClass { return LayerTypePFLog }
 
-func (pf *PFLog) NextLayerType() gopacket.LayerType {
+func (pf *PFLog) NextLayerType() gopacket_dpdk.LayerType {
 	return pf.Family.LayerType()
 }
 
-func decodePFLog(data []byte, p gopacket.PacketBuilder) error {
+func decodePFLog(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	pf := &PFLog{}
 	return decodingLayerDecoder(pf, data, p)
 }

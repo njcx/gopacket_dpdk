@@ -76,21 +76,21 @@ int pcap_set_rfmon(pcap_t *p, int rfmon) {
 
 // Windows, Macs, and Linux all use different time types.  Joy.
 #ifdef WIN32
-#define gopacket_time_secs_t long
-#define gopacket_time_usecs_t long
+#define gopacket_dpdk_time_secs_t long
+#define gopacket_dpdk_time_usecs_t long
 #elif __APPLE__
-#define gopacket_time_secs_t __darwin_time_t
-#define gopacket_time_usecs_t __darwin_suseconds_t
+#define gopacket_dpdk_time_secs_t __darwin_time_t
+#define gopacket_dpdk_time_usecs_t __darwin_suseconds_t
 #elif __GLIBC__
-#define gopacket_time_secs_t __time_t
-#define gopacket_time_usecs_t __suseconds_t
+#define gopacket_dpdk_time_secs_t __time_t
+#define gopacket_dpdk_time_usecs_t __suseconds_t
 #elif __OpenBSD__
 // time_t is 64-bit, however bpf_timeval uses 32 bit fields
-#define gopacket_time_secs_t u_int32_t
-#define gopacket_time_usecs_t u_int32_t
+#define gopacket_dpdk_time_secs_t u_int32_t
+#define gopacket_dpdk_time_usecs_t u_int32_t
 #else
-#define gopacket_time_secs_t time_t
-#define gopacket_time_usecs_t suseconds_t
+#define gopacket_dpdk_time_secs_t time_t
+#define gopacket_dpdk_time_usecs_t suseconds_t
 #endif
 */
 import "C"
@@ -108,8 +108,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 )
 
 const errorBufferSize = 256
@@ -279,7 +279,7 @@ const (
 // NextError returns the next packet read from the pcap handle, along with an error
 // code associated with that packet.  If the packet is read successfully, the
 // returned error is nil.
-func (p *Handle) ReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error) {
+func (p *Handle) ReadPacketData() (data []byte, ci gopacket_dpdk.CaptureInfo, err error) {
 	p.mu.Lock()
 	err = p.getNextBufPtrLocked(&ci)
 	if err == nil {
@@ -321,7 +321,7 @@ func (a activateError) Error() string {
 
 // getNextBufPtrLocked is shared code for ReadPacketData and
 // ZeroCopyReadPacketData.
-func (p *Handle) getNextBufPtrLocked(ci *gopacket.CaptureInfo) error {
+func (p *Handle) getNextBufPtrLocked(ci *gopacket_dpdk.CaptureInfo) error {
 	var result NextError
 	for {
 		if !p.packetPoller.AwaitForPackets() {
@@ -358,7 +358,7 @@ func (p *Handle) getNextBufPtrLocked(ci *gopacket.CaptureInfo) error {
 //	data1, _, _ := handle.ZeroCopyReadPacketData()
 //	// do everything you want with data1 here, copying bytes out of it if you'd like to keep them around.
 //	data2, _, _ := handle.ZeroCopyReadPacketData()  // invalidates bytes in data1
-func (p *Handle) ZeroCopyReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error) {
+func (p *Handle) ZeroCopyReadPacketData() (data []byte, ci gopacket_dpdk.CaptureInfo, err error) {
 	p.mu.Lock()
 	err = p.getNextBufPtrLocked(&ci)
 	if err == nil {
@@ -492,10 +492,10 @@ func (b *BPF) BPF() C.struct_bpf_program {
 }
 
 // Matches returns true if the given packet data matches this filter.
-func (b *BPF) Matches(ci gopacket.CaptureInfo, data []byte) bool {
+func (b *BPF) Matches(ci gopacket_dpdk.CaptureInfo, data []byte) bool {
 	var hdr C.struct_pcap_pkthdr
-	hdr.ts.tv_sec = C.gopacket_time_secs_t(ci.Timestamp.Unix())
-	hdr.ts.tv_usec = C.gopacket_time_usecs_t(ci.Timestamp.Nanosecond() / 1000)
+	hdr.ts.tv_sec = C.gopacket_dpdk_time_secs_t(ci.Timestamp.Unix())
+	hdr.ts.tv_usec = C.gopacket_dpdk_time_usecs_t(ci.Timestamp.Nanosecond() / 1000)
 	hdr.caplen = C.bpf_u_int32(len(data)) // Trust actual length over ci.Length.
 	hdr.len = C.bpf_u_int32(ci.Length)
 	dataptr := (*C.u_char)(unsafe.Pointer(&data[0]))
@@ -819,13 +819,13 @@ func (h *Handle) NewDumper(file string) (dumper *Dumper, err error) {
 
 // Writes a packet to the file. The return values of ReadPacketData
 // can be passed to this function as arguments.
-func (d *Dumper) WritePacketData(data []byte, ci gopacket.CaptureInfo) (err error) {
+func (d *Dumper) WritePacketData(data []byte, ci gopacket_dpdk.CaptureInfo) (err error) {
 	var pkthdr C.struct_pcap_pkthdr
 	pkthdr.caplen = C.bpf_u_int32(ci.CaptureLength)
 	pkthdr.len = C.bpf_u_int32(ci.Length)
 
-	pkthdr.ts.tv_sec = C.gopacket_time_secs_t(ci.Timestamp.Unix())
-	pkthdr.ts.tv_usec = C.gopacket_time_usecs_t(ci.Timestamp.Nanosecond() / 1000)
+	pkthdr.ts.tv_sec = C.gopacket_dpdk_time_secs_t(ci.Timestamp.Unix())
+	pkthdr.ts.tv_usec = C.gopacket_dpdk_time_usecs_t(ci.Timestamp.Nanosecond() / 1000)
 
 	// pcap_dump takes a u_char pointer to the dumper as first argument
 	dumper_ptr := (*C.u_char)(unsafe.Pointer(d.cptr))

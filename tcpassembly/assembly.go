@@ -8,8 +8,8 @@
 //
 // The tcpassembly package implements uni-directional TCP reassembly, for use in
 // packet-sniffing applications.  The caller reads packets off the wire, then
-// presents them to an Assembler in the form of gopacket layers.TCP packets
-// (github.com/njcx/gopacket, code.google.com/p/gopacket/layers).
+// presents them to an Assembler in the form of gopacket_dpdk layers.TCP packets
+// (github.com/njcx/gopacket_dpdk, code.google.com/p/gopacket_dpdk/layers).
 //
 // The Assembler uses a user-supplied
 // StreamFactory to create a user-defined Stream interface, then passes packet
@@ -21,15 +21,15 @@ package tcpassembly
 import (
 	"flag"
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"log"
 	"sync"
 	"time"
 )
 
-var memLog = flag.Bool("assembly_memuse_log", false, "If true, the github.com/njcx/gopacket/tcpassembly library will log information regarding its memory use every once in a while.")
-var debugLog = flag.Bool("assembly_debug_log", false, "If true, the github.com/njcx/gopacket/tcpassembly library will log verbose debugging information (at least one line per packet)")
+var memLog = flag.Bool("assembly_memuse_log", false, "If true, the github.com/njcx/gopacket_dpdk/tcpassembly library will log information regarding its memory use every once in a while.")
+var debugLog = flag.Bool("assembly_debug_log", false, "If true, the github.com/njcx/gopacket_dpdk/tcpassembly library will log verbose debugging information (at least one line per packet)")
 
 const invalidSequence = -1
 const uint32Max = 0xFFFFFFFF
@@ -190,7 +190,7 @@ type Stream interface {
 // new TCP session.
 type StreamFactory interface {
 	// New should return a new stream for the given TCP key.
-	New(netFlow, tcpFlow gopacket.Flow) Stream
+	New(netFlow, tcpFlow gopacket_dpdk.Flow) Stream
 }
 
 func (p *StreamPool) connections() []*connection {
@@ -274,7 +274,7 @@ func (a *Assembler) FlushAll() (closed int) {
 	return
 }
 
-type key [2]gopacket.Flow
+type key [2]gopacket_dpdk.Flow
 
 func (k *key) String() string {
 	return fmt.Sprintf("%s:%s", k[0], k[1])
@@ -501,7 +501,7 @@ func (p *StreamPool) getConnection(k key, end bool, ts time.Time) *connection {
 
 // Assemble calls AssembleWithTimestamp with the current timestamp, useful for
 // packets being read directly off the wire.
-func (a *Assembler) Assemble(netFlow gopacket.Flow, t *layers.TCP) {
+func (a *Assembler) Assemble(netFlow gopacket_dpdk.Flow, t *layers.TCP) {
 	a.AssembleWithTimestamp(netFlow, t, time.Now())
 }
 
@@ -518,7 +518,7 @@ func (a *Assembler) Assemble(netFlow gopacket.Flow, t *layers.TCP) {
 //	zero or one calls to StreamFactory.New, creating a stream
 //	zero or one calls to Reassembled on a single stream
 //	zero or one calls to ReassemblyComplete on the same stream
-func (a *Assembler) AssembleWithTimestamp(netFlow gopacket.Flow, t *layers.TCP, timestamp time.Time) {
+func (a *Assembler) AssembleWithTimestamp(netFlow gopacket_dpdk.Flow, t *layers.TCP, timestamp time.Time) {
 	// Ignore empty TCP packets
 	if !t.SYN && !t.FIN && !t.RST && len(t.LayerPayload()) == 0 {
 		if *debugLog {

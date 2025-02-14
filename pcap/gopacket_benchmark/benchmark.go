@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-// This benchmark reads in file <tempdir>/gopacket_benchmark.pcap and measures
+// This benchmark reads in file <tempdir>/gopacket_dpdk_benchmark.pcap and measures
 // the time it takes to decode all packets from that file.  If the file doesn't
 // exist, it's pulled down from a publicly available location.  However, you can
 // feel free to substitute your own file at that location, in which case the
@@ -22,10 +22,10 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
-	"github.com/njcx/gopacket/tcpassembly"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
+	"github.com/njcx/gopacket_dpdk/tcpassembly"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -46,10 +46,10 @@ var url *string = flag.String("url", "http://www.ll.mit.edu/mission/communicatio
 type BufferPacketSource struct {
 	index int
 	data  [][]byte
-	ci    []gopacket.CaptureInfo
+	ci    []gopacket_dpdk.CaptureInfo
 }
 
-func NewBufferPacketSource(p gopacket.PacketDataSource) *BufferPacketSource {
+func NewBufferPacketSource(p gopacket_dpdk.PacketDataSource) *BufferPacketSource {
 	start := time.Now()
 	b := &BufferPacketSource{}
 	for {
@@ -65,7 +65,7 @@ func NewBufferPacketSource(p gopacket.PacketDataSource) *BufferPacketSource {
 	return b
 }
 
-func (b *BufferPacketSource) ReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error) {
+func (b *BufferPacketSource) ReadPacketData() (data []byte, ci gopacket_dpdk.CaptureInfo, err error) {
 	if b.index >= len(b.data) {
 		err = io.EOF
 		return
@@ -83,7 +83,7 @@ func (b *BufferPacketSource) Reset() {
 
 func main() {
 	flag.Parse()
-	filename := os.TempDir() + string(os.PathSeparator) + "gopacket_benchmark.pcap"
+	filename := os.TempDir() + string(os.PathSeparator) + "gopacket_dpdk_benchmark.pcap"
 	if _, err := os.Stat(filename); err != nil {
 		// This URL points to a publicly available packet data set from a DARPA
 		// intrusion detection evaluation.  See
@@ -129,7 +129,7 @@ func main() {
 		}
 	}
 	var packetDataSource *BufferPacketSource
-	var packetSource *gopacket.PacketSource
+	var packetSource *gopacket_dpdk.PacketSource
 	fmt.Printf("Opening file %q for read\n", filename)
 	if h, err := pcap.OpenOffline(filename); err != nil {
 		panic(err)
@@ -139,7 +139,7 @@ func main() {
 		packetDataSource = NewBufferPacketSource(h)
 		duration := time.Since(start)
 		fmt.Printf("Time to read packet data into memory from file: %v\n", duration)
-		packetSource = gopacket.NewPacketSource(packetDataSource, h.LinkType())
+		packetSource = gopacket_dpdk.NewPacketSource(packetDataSource, h.LinkType())
 		packetSource.DecodeOptions.Lazy = *decodeLazy
 		packetSource.DecodeOptions.NoCopy = *decodeNoCopy
 	}
@@ -163,7 +163,7 @@ func main() {
 	}
 }
 
-func benchmarkPacketDecode(packetSource *gopacket.PacketSource) {
+func benchmarkPacketDecode(packetSource *gopacket_dpdk.PacketSource) {
 	count, errors := 0, 0
 	start := time.Now()
 	for packet, err := packetSource.NextPacket(); err != io.EOF; packet, err = packetSource.NextPacket() {
@@ -198,7 +198,7 @@ func benchmarkPacketDecode(packetSource *gopacket.PacketSource) {
 type streamFactory struct {
 }
 
-func (s *streamFactory) New(netFlow, tcpFlow gopacket.Flow) tcpassembly.Stream {
+func (s *streamFactory) New(netFlow, tcpFlow gopacket_dpdk.Flow) tcpassembly.Stream {
 	return s
 }
 func (s *streamFactory) Reassembled([]tcpassembly.Reassembly) {
@@ -212,13 +212,13 @@ func benchmarkLayerDecode(source *BufferPacketSource, assemble bool) {
 	var eth layers.Ethernet
 	var udp layers.UDP
 	var icmp layers.ICMPv4
-	var payload gopacket.Payload
-	parser := gopacket.NewDecodingLayerParser(
+	var payload gopacket_dpdk.Payload
+	parser := gopacket_dpdk.NewDecodingLayerParser(
 		layers.LayerTypeEthernet,
 		&eth, &ip, &icmp, &tcp, &udp, &payload)
 	pool := tcpassembly.NewStreamPool(&streamFactory{})
 	assembler := tcpassembly.NewAssembler(pool)
-	var decoded []gopacket.LayerType
+	var decoded []gopacket_dpdk.LayerType
 	start := time.Now()
 	packets, decodedlayers, assembled := 0, 0, 0
 	for {

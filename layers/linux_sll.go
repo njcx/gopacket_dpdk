@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 type LinuxSLLPacketType uint16
@@ -57,21 +57,21 @@ type LinuxSLL struct {
 }
 
 // LayerType returns LayerTypeLinuxSLL.
-func (sll *LinuxSLL) LayerType() gopacket.LayerType { return LayerTypeLinuxSLL }
+func (sll *LinuxSLL) LayerType() gopacket_dpdk.LayerType { return LayerTypeLinuxSLL }
 
-func (sll *LinuxSLL) CanDecode() gopacket.LayerClass {
+func (sll *LinuxSLL) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeLinuxSLL
 }
 
-func (sll *LinuxSLL) LinkFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointMAC, sll.Addr, nil)
+func (sll *LinuxSLL) LinkFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointMAC, sll.Addr, nil)
 }
 
-func (sll *LinuxSLL) NextLayerType() gopacket.LayerType {
+func (sll *LinuxSLL) NextLayerType() gopacket_dpdk.LayerType {
 	return sll.EthernetType.LayerType()
 }
 
-func (sll *LinuxSLL) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (sll *LinuxSLL) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	if len(data) < 16 {
 		return errors.New("Linux SLL packet too small")
 	}
@@ -85,7 +85,7 @@ func (sll *LinuxSLL) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) er
 	return nil
 }
 
-func decodeLinuxSLL(data []byte, p gopacket.PacketBuilder) error {
+func decodeLinuxSLL(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	sll := &LinuxSLL{}
 	if err := sll.DecodeFromBytes(data, p); err != nil {
 		return err

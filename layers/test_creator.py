@@ -44,15 +44,15 @@ class Packet(object):
       yield ''.join(['\t'] + ['0x%02x, ' % ord(c) for c in linebytes])
     yield '}'
     yield 'func TestPacket%s(t *testing.T) {' % name
-    yield '\tp := gopacket.NewPacket(testPacket%s, LinkType%s, gopacket.Default)' % (name, link_type)
+    yield '\tp := gopacket_dpdk.NewPacket(testPacket%s, LinkType%s, gopacket_dpdk.Default)' % (name, link_type)
     yield '\tif p.ErrorLayer() != nil {'
     yield '\t\tt.Error("Failed to decode packet:", p.ErrorLayer().Error())'
     yield '\t}'
-    yield '\tcheckLayers(p, []gopacket.LayerType{LayerType%s, FILL_ME_IN_WITH_ACTUAL_LAYERS}, t)' % link_type
+    yield '\tcheckLayers(p, []gopacket_dpdk.LayerType{LayerType%s, FILL_ME_IN_WITH_ACTUAL_LAYERS}, t)' % link_type
     yield '}'
     yield 'func BenchmarkDecodePacket%s(b *testing.B) {' % name
     yield '\tfor i := 0; i < b.N; i++ {'
-    yield '\t\tgopacket.NewPacket(testPacket%s, LinkType%s, gopacket.NoCopy)' % (name, link_type)
+    yield '\t\tgopacket_dpdk.NewPacket(testPacket%s, LinkType%s, gopacket_dpdk.NoCopy)' % (name, link_type)
     yield '\t}'
     yield '}'
 
@@ -79,7 +79,7 @@ def TcpdumpOutputToPackets(output):
 def main():
   class CustomHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     def _format_usage(self, usage, actions, groups, prefix=None):
-      header =('TestCreator creates gopacket tests using a pcap file.\n\n'
+      header =('TestCreator creates gopacket_dpdk tests using a pcap file.\n\n'
                'Tests are written to standard out... they can then be \n'
                'copied into the file of your choice and modified as \n'
                'you see.\n\n')

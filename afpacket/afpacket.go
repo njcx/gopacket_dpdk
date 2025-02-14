@@ -24,9 +24,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
 )
 
 /*
@@ -227,7 +227,7 @@ func (h *TPacket) releaseCurrentPacket() error {
 //	data1, _, _ := tp.ZeroCopyReadPacketData()
 //	// do everything you want with data1 here, copying bytes out of it if you'd like to keep them around.
 //	data2, _, _ := tp.ZeroCopyReadPacketData()  // invalidates bytes in data1
-func (h *TPacket) ZeroCopyReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error) {
+func (h *TPacket) ZeroCopyReadPacketData() (data []byte, ci gopacket_dpdk.CaptureInfo, err error) {
 	h.mu.Lock()
 	if h.current == nil || !h.headerNextNeeded || !h.current.next() {
 		if h.shouldReleasePacket {
@@ -262,7 +262,7 @@ func (h *TPacket) Stats() (Stats, error) {
 // The number of bytes read into data will be returned in ci.CaptureLength,
 // which is the minimum of the size of the passed-in buffer and the size of
 // the captured packet.
-func (h *TPacket) ReadPacketDataTo(data []byte) (ci gopacket.CaptureInfo, err error) {
+func (h *TPacket) ReadPacketDataTo(data []byte) (ci gopacket_dpdk.CaptureInfo, err error) {
 	var d []byte
 	d, ci, err = h.ZeroCopyReadPacketData()
 	if err != nil {
@@ -274,8 +274,8 @@ func (h *TPacket) ReadPacketDataTo(data []byte) (ci gopacket.CaptureInfo, err er
 
 // ReadPacketData reads the next packet, copies it into a new buffer, and returns
 // that buffer.  Since the buffer is allocated by ReadPacketData, it is safe for long-term
-// use.  This implements gopacket.PacketDataSource.
-func (h *TPacket) ReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error) {
+// use.  This implements gopacket_dpdk.PacketDataSource.
+func (h *TPacket) ReadPacketData() (data []byte, ci gopacket_dpdk.CaptureInfo, err error) {
 	var d []byte
 	d, ci, err = h.ZeroCopyReadPacketData()
 	if err != nil {

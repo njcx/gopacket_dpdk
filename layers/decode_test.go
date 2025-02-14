@@ -16,8 +16,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/bytediff"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/bytediff"
 )
 
 var testSimpleTCPPacket []byte = []byte{
@@ -60,7 +60,7 @@ var testSimpleTCPPacket []byte = []byte{
 	0x0d, 0x0a,
 }
 
-var testDecodeOptions = gopacket.DecodeOptions{
+var testDecodeOptions = gopacket_dpdk.DecodeOptions{
 	SkipDecodeRecovery: true,
 }
 
@@ -68,17 +68,17 @@ type nilDecodeFeedback struct{}
 
 func (n *nilDecodeFeedback) SetTruncated() {}
 
-// Benchmarks for actual gopacket code
+// Benchmarks for actual gopacket_dpdk code
 
 func BenchmarkLayerClassSliceContains(b *testing.B) {
-	lc := gopacket.NewLayerClassSlice([]gopacket.LayerType{LayerTypeTCP, LayerTypeEthernet})
+	lc := gopacket_dpdk.NewLayerClassSlice([]gopacket_dpdk.LayerType{LayerTypeTCP, LayerTypeEthernet})
 	for i := 0; i < b.N; i++ {
 		_ = lc.Contains(LayerTypeTCP)
 	}
 }
 
 func BenchmarkLayerClassMapContains(b *testing.B) {
-	lc := gopacket.NewLayerClassMap([]gopacket.LayerType{LayerTypeTCP, LayerTypeEthernet})
+	lc := gopacket_dpdk.NewLayerClassMap([]gopacket_dpdk.LayerType{LayerTypeTCP, LayerTypeEthernet})
 	for i := 0; i < b.N; i++ {
 		_ = lc.Contains(LayerTypeTCP)
 	}
@@ -86,39 +86,39 @@ func BenchmarkLayerClassMapContains(b *testing.B) {
 
 func BenchmarkLazyNoCopyEthLayer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeEthernet)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeEthernet)
 	}
 }
 
 func BenchmarkLazyNoCopyIPLayer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeIPv4)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeIPv4)
 	}
 }
 
 func BenchmarkLazyNoCopyTCPLayer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeTCP)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true}).Layer(LayerTypeTCP)
 	}
 }
 
 func BenchmarkLazyNoCopyAllLayers(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true}).Layers()
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true}).Layers()
 	}
 }
 
 func BenchmarkDefault(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.Default)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.Default)
 	}
 }
 
-func getSerializeLayers() []gopacket.SerializableLayer {
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
-	slayers := []gopacket.SerializableLayer{}
+func getSerializeLayers() []gopacket_dpdk.SerializableLayer {
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	slayers := []gopacket_dpdk.SerializableLayer{}
 	for _, l := range p.Layers() {
-		slayers = append(slayers, l.(gopacket.SerializableLayer))
+		slayers = append(slayers, l.(gopacket_dpdk.SerializableLayer))
 	}
 	p.Layer(LayerTypeTCP).(*TCP).SetNetworkLayerForChecksum(
 		p.NetworkLayer())
@@ -127,61 +127,61 @@ func getSerializeLayers() []gopacket.SerializableLayer {
 
 func BenchmarkSerializeTcpNoOptions(b *testing.B) {
 	slayers := getSerializeLayers()
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{}
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	opts := gopacket_dpdk.SerializeOptions{}
 	for i := 0; i < b.N; i++ {
-		gopacket.SerializeLayers(buf, opts, slayers...)
+		gopacket_dpdk.SerializeLayers(buf, opts, slayers...)
 	}
 }
 
 func BenchmarkSerializeTcpFixLengths(b *testing.B) {
 	slayers := getSerializeLayers()
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{FixLengths: true}
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	opts := gopacket_dpdk.SerializeOptions{FixLengths: true}
 	for i := 0; i < b.N; i++ {
-		gopacket.SerializeLayers(buf, opts, slayers...)
+		gopacket_dpdk.SerializeLayers(buf, opts, slayers...)
 	}
 }
 
 func BenchmarkSerializeTcpComputeChecksums(b *testing.B) {
 	slayers := getSerializeLayers()
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{ComputeChecksums: true}
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	opts := gopacket_dpdk.SerializeOptions{ComputeChecksums: true}
 	for i := 0; i < b.N; i++ {
-		gopacket.SerializeLayers(buf, opts, slayers...)
+		gopacket_dpdk.SerializeLayers(buf, opts, slayers...)
 	}
 }
 
 func BenchmarkSerializeTcpFixLengthsComputeChecksums(b *testing.B) {
 	slayers := getSerializeLayers()
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true}
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	opts := gopacket_dpdk.SerializeOptions{FixLengths: true, ComputeChecksums: true}
 	for i := 0; i < b.N; i++ {
-		gopacket.SerializeLayers(buf, opts, slayers...)
+		gopacket_dpdk.SerializeLayers(buf, opts, slayers...)
 	}
 }
 
 func BenchmarkLazy(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.Lazy)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.Lazy)
 	}
 }
 
 func BenchmarkNoCopy(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 
 func BenchmarkLazyNoCopy(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true})
+		gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true})
 	}
 }
 
 func BenchmarkKnownStack(b *testing.B) {
-	stack := []gopacket.DecodingLayer{&Ethernet{}, &IPv4{}, &TCP{}, &gopacket.Payload{}}
-	var nf gopacket.DecodeFeedback = &nilDecodeFeedback{}
+	stack := []gopacket_dpdk.DecodingLayer{&Ethernet{}, &IPv4{}, &TCP{}, &gopacket_dpdk.Payload{}}
+	var nf gopacket_dpdk.DecodeFeedback = &nilDecodeFeedback{}
 	for i := 0; i < b.N; i++ {
 		data := testSimpleTCPPacket[:]
 		for _, d := range stack {
@@ -192,8 +192,8 @@ func BenchmarkKnownStack(b *testing.B) {
 }
 
 func BenchmarkDecodingLayerParserIgnorePanic(b *testing.B) {
-	decoded := make([]gopacket.LayerType, 0, 20)
-	dlp := gopacket.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket.Payload{})
+	decoded := make([]gopacket_dpdk.LayerType, 0, 20)
+	dlp := gopacket_dpdk.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket_dpdk.Payload{})
 	dlp.IgnorePanic = true
 	for i := 0; i < b.N; i++ {
 		dlp.DecodeLayers(testSimpleTCPPacket, &decoded)
@@ -201,8 +201,8 @@ func BenchmarkDecodingLayerParserIgnorePanic(b *testing.B) {
 }
 
 func BenchmarkDecodingLayerParserHandlePanic(b *testing.B) {
-	decoded := make([]gopacket.LayerType, 0, 20)
-	dlp := gopacket.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket.Payload{})
+	decoded := make([]gopacket_dpdk.LayerType, 0, 20)
+	dlp := gopacket_dpdk.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket_dpdk.Payload{})
 	dlp.IgnorePanic = false
 	for i := 0; i < b.N; i++ {
 		dlp.DecodeLayers(testSimpleTCPPacket, &decoded)
@@ -216,7 +216,7 @@ func BenchmarkAlloc(b *testing.B) {
 }
 
 func BenchmarkFlow(b *testing.B) {
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true})
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true})
 	net := p.NetworkLayer()
 	for i := 0; i < b.N; i++ {
 		net.NetworkFlow()
@@ -224,7 +224,7 @@ func BenchmarkFlow(b *testing.B) {
 }
 
 func BenchmarkEndpoints(b *testing.B) {
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true})
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true})
 	flow := p.NetworkLayer().NetworkFlow()
 	for i := 0; i < b.N; i++ {
 		flow.Endpoints()
@@ -233,7 +233,7 @@ func BenchmarkEndpoints(b *testing.B) {
 
 func BenchmarkTCPLayerFromDecodedPacket(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = p.Layer(LayerTypeTCP)
@@ -242,8 +242,8 @@ func BenchmarkTCPLayerFromDecodedPacket(b *testing.B) {
 
 func BenchmarkTCPLayerClassFromDecodedPacket(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
-	lc := gopacket.NewLayerClass([]gopacket.LayerType{LayerTypeTCP})
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	lc := gopacket_dpdk.NewLayerClass([]gopacket_dpdk.LayerType{LayerTypeTCP})
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = p.LayerClass(lc)
@@ -252,39 +252,39 @@ func BenchmarkTCPLayerClassFromDecodedPacket(b *testing.B) {
 
 func BenchmarkTCPTransportLayerFromDecodedPacket(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = p.TransportLayer()
 	}
 }
 
-func testDecoder([]byte, gopacket.PacketBuilder) error {
+func testDecoder([]byte, gopacket_dpdk.PacketBuilder) error {
 	return nil
 }
 
 func BenchmarkDecodeFuncCallOverheadDirectCall(b *testing.B) {
 	var data []byte
-	var pb gopacket.PacketBuilder
+	var pb gopacket_dpdk.PacketBuilder
 	for i := 0; i < b.N; i++ {
 		_ = testDecoder(data, pb)
 	}
 }
 
 func BenchmarkDecodeFuncCallOverheadDecoderCall(b *testing.B) {
-	d := gopacket.DecodeFunc(testDecoder)
+	d := gopacket_dpdk.DecodeFunc(testDecoder)
 	var data []byte
-	var pb gopacket.PacketBuilder
+	var pb gopacket_dpdk.PacketBuilder
 	for i := 0; i < b.N; i++ {
 		_ = d.Decode(data, pb)
 	}
 }
 
 func BenchmarkDecodeFuncCallOverheadArrayCall(b *testing.B) {
-	EthernetTypeMetadata[1] = EnumMetadata{DecodeWith: gopacket.DecodeFunc(testDecoder)}
+	EthernetTypeMetadata[1] = EnumMetadata{DecodeWith: gopacket_dpdk.DecodeFunc(testDecoder)}
 	d := EthernetType(1)
 	var data []byte
-	var pb gopacket.PacketBuilder
+	var pb gopacket_dpdk.PacketBuilder
 	for i := 0; i < b.N; i++ {
 		_ = d.Decode(data, pb)
 	}
@@ -292,7 +292,7 @@ func BenchmarkDecodeFuncCallOverheadArrayCall(b *testing.B) {
 
 func BenchmarkFmtVerboseString(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = fmt.Sprintf("%#v", p)
@@ -301,7 +301,7 @@ func BenchmarkFmtVerboseString(b *testing.B) {
 
 func BenchmarkPacketString(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		p.String()
@@ -310,7 +310,7 @@ func BenchmarkPacketString(b *testing.B) {
 
 func BenchmarkPacketDumpString(b *testing.B) {
 	b.StopTimer()
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, testDecodeOptions)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		p.String()
@@ -319,9 +319,9 @@ func BenchmarkPacketDumpString(b *testing.B) {
 
 // TestFlowMapKey makes sure a flow and an endpoint can be used as map keys.
 func TestFlowMapKey(t *testing.T) {
-	_ = map[gopacket.Flow]bool{}
-	_ = map[gopacket.Endpoint]bool{}
-	_ = map[[2]gopacket.Flow]bool{}
+	_ = map[gopacket_dpdk.Flow]bool{}
+	_ = map[gopacket_dpdk.Endpoint]bool{}
+	_ = map[[2]gopacket_dpdk.Flow]bool{}
 }
 
 func TestDecodeSimpleTCPPacket(t *testing.T) {
@@ -330,7 +330,7 @@ func TestDecodeSimpleTCPPacket(t *testing.T) {
 			t.Errorf("%s: got %q want %q", desc, got.String(), want)
 		}
 	}
-	p := gopacket.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket.DecodeOptions{Lazy: true, NoCopy: true})
+	p := gopacket_dpdk.NewPacket(testSimpleTCPPacket, LinkTypeEthernet, gopacket_dpdk.DecodeOptions{Lazy: true, NoCopy: true})
 	if eth := p.LinkLayer(); eth == nil {
 		t.Error("No ethernet layer found")
 	} else {
@@ -420,7 +420,7 @@ func TestDecodeSimpleTCPPacket(t *testing.T) {
 			t.Errorf("TCP layer mismatch\ngot  %#v\nwant %#v", tcp, want)
 		}
 	}
-	if payload, ok := p.Layer(gopacket.LayerTypePayload).(*gopacket.Payload); payload == nil || !ok {
+	if payload, ok := p.Layer(gopacket_dpdk.LayerTypePayload).(*gopacket_dpdk.Payload); payload == nil || !ok {
 		t.Error("No payload layer found")
 	} else {
 		if string(payload.Payload()) != "GET / HTTP/1.1\r\nHost: www.fish.com\r\nConnection: keep-alive\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Encoding: gzip,deflate,sdch\r\nAccept-Language: en-US,en;q=0.8\r\nAccept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3\r\n\r\n" {
@@ -433,33 +433,33 @@ func TestDecodeSimpleTCPPacket(t *testing.T) {
 }
 
 type canSetNetLayer interface {
-	SetNetworkLayerForChecksum(gopacket.NetworkLayer) error
+	SetNetworkLayerForChecksum(gopacket_dpdk.NetworkLayer) error
 }
 
-func testSerialization(t *testing.T, p gopacket.Packet, data []byte) {
-	for _, opts := range []gopacket.SerializeOptions{
-		gopacket.SerializeOptions{},
-		gopacket.SerializeOptions{FixLengths: true},
-		gopacket.SerializeOptions{ComputeChecksums: true},
-		gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true},
+func testSerialization(t *testing.T, p gopacket_dpdk.Packet, data []byte) {
+	for _, opts := range []gopacket_dpdk.SerializeOptions{
+		gopacket_dpdk.SerializeOptions{},
+		gopacket_dpdk.SerializeOptions{FixLengths: true},
+		gopacket_dpdk.SerializeOptions{ComputeChecksums: true},
+		gopacket_dpdk.SerializeOptions{FixLengths: true, ComputeChecksums: true},
 	} {
 		testSerializationWithOpts(t, p, data, opts)
 	}
 }
 
-func testSerializationWithOpts(t *testing.T, p gopacket.Packet, data []byte, opts gopacket.SerializeOptions) {
+func testSerializationWithOpts(t *testing.T, p gopacket_dpdk.Packet, data []byte, opts gopacket_dpdk.SerializeOptions) {
 	// Test re-serialization.
-	slayers := []gopacket.SerializableLayer{}
+	slayers := []gopacket_dpdk.SerializableLayer{}
 	for _, l := range p.Layers() {
-		slayers = append(slayers, l.(gopacket.SerializableLayer))
+		slayers = append(slayers, l.(gopacket_dpdk.SerializableLayer))
 		if h, ok := l.(canSetNetLayer); ok {
 			if err := h.SetNetworkLayerForChecksum(p.NetworkLayer()); err != nil {
 				t.Fatal("can't set network layer:", err)
 			}
 		}
 	}
-	buf := gopacket.NewSerializeBuffer()
-	err := gopacket.SerializeLayers(buf, opts, slayers...)
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	err := gopacket_dpdk.SerializeLayers(buf, opts, slayers...)
 	if err != nil {
 		t.Errorf("unable to reserialize layers with opts %#v: %v", opts, err)
 	} else if !bytes.Equal(buf.Bytes(), data) {
@@ -478,9 +478,9 @@ func TestDecodeSmallTCPPacketHasEmptyPayload(t *testing.T) {
 		0x9a, 0xef, 0x00, 0x00, 0x00, 0x00, 0x2e, 0xc1, 0x27, 0x83, 0x50, 0x14,
 		0x00, 0x00, 0xc3, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	}
-	p := gopacket.NewPacket(smallPacket, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(smallPacket, LinkTypeEthernet, testDecodeOptions)
 
-	if payload := p.Layer(gopacket.LayerTypePayload); payload != nil {
+	if payload := p.Layer(gopacket_dpdk.LayerTypePayload); payload != nil {
 		t.Error("Payload found for empty TCP packet")
 	}
 
@@ -488,7 +488,7 @@ func TestDecodeSmallTCPPacketHasEmptyPayload(t *testing.T) {
 }
 
 func TestDecodeVLANPacket(t *testing.T) {
-	p := gopacket.NewPacket(
+	p := gopacket_dpdk.NewPacket(
 		[]byte{
 			0x00, 0x10, 0xdb, 0xff, 0x10, 0x00, 0x00, 0x15, 0x2c, 0x9d, 0xcc, 0x00,
 			0x81, 0x00, 0x01, 0xf7, 0x08, 0x00, 0x45, 0x00, 0x00, 0x28, 0x29, 0x8d,
@@ -508,7 +508,7 @@ func TestDecodeVLANPacket(t *testing.T) {
 	for i, l := range p.Layers() {
 		t.Logf("Layer %d: %#v", i, l)
 	}
-	want := []gopacket.LayerType{LayerTypeEthernet, LayerTypeDot1Q, LayerTypeIPv4, LayerTypeTCP}
+	want := []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeDot1Q, LayerTypeIPv4, LayerTypeTCP}
 	checkLayers(p, want, t)
 }
 
@@ -595,19 +595,19 @@ func TestDecodeSCTPPackets(t *testing.T) {
 			0x09, 0xcc, 0x27, 0x0f, 0x22, 0xb8, 0x32, 0x80, 0xfb, 0x42, 0xa8, 0xd1, 0x86, 0x85, 0x0e, 0x00,
 			0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		}}
-	wantLayers := [][]gopacket.LayerType{
-		[]gopacket.LayerType{LayerTypeSCTPInit},
-		[]gopacket.LayerType{LayerTypeSCTPInitAck},
-		[]gopacket.LayerType{LayerTypeSCTPCookieEcho, LayerTypeSCTPData},
-		[]gopacket.LayerType{LayerTypeSCTPCookieAck, LayerTypeSCTPSack},
-		[]gopacket.LayerType{LayerTypeSCTPData},
-		[]gopacket.LayerType{LayerTypeSCTPSack},
-		[]gopacket.LayerType{LayerTypeSCTPShutdown},
-		[]gopacket.LayerType{LayerTypeSCTPShutdownAck},
-		[]gopacket.LayerType{LayerTypeSCTPShutdownComplete},
+	wantLayers := [][]gopacket_dpdk.LayerType{
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPInit},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPInitAck},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPCookieEcho, LayerTypeSCTPData},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPCookieAck, LayerTypeSCTPSack},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPData},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPSack},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPShutdown},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPShutdownAck},
+		[]gopacket_dpdk.LayerType{LayerTypeSCTPShutdownComplete},
 	}
 	for i, data := range sctpPackets {
-		p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+		p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
 		for _, typ := range wantLayers[i] {
 			if p.Layer(typ) == nil {
 				t.Errorf("Packet %d missing layer type %v, got:", i, typ)
@@ -620,7 +620,7 @@ func TestDecodeSCTPPackets(t *testing.T) {
 			}
 		}
 		// Test re-serialization.
-		testSerializationWithOpts(t, p, data, gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true})
+		testSerializationWithOpts(t, p, data, gopacket_dpdk.SerializeOptions{FixLengths: true, ComputeChecksums: true})
 	}
 }
 
@@ -658,8 +658,8 @@ func TestDecodeCiscoDiscovery(t *testing.T) {
 		0x00, 0x16, 0x00, 0x11, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0xcc, 0x00, 0x04, 0xc0, 0xa8, 0x00,
 		0xfd,
 	}
-	p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	wantLayers := []gopacket.LayerType{LayerTypeEthernet, LayerTypeLLC, LayerTypeSNAP, LayerTypeCiscoDiscovery, LayerTypeCiscoDiscoveryInfo}
+	p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	wantLayers := []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeLLC, LayerTypeSNAP, LayerTypeCiscoDiscovery, LayerTypeCiscoDiscoveryInfo}
 	checkLayers(p, wantLayers, t)
 
 	want := &CiscoDiscoveryInfo{
@@ -723,8 +723,8 @@ func TestDecodeLinkLayerDiscovery(t *testing.T) {
 		0x35, 0x00, 0xfe, 0x05, 0x00, 0x80, 0xc2, 0x04, 0x00, 0x00, 0x00,
 	}
 
-	p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	wantLayers := []gopacket.LayerType{LayerTypeEthernet, LayerTypeLinkLayerDiscovery, LayerTypeLinkLayerDiscoveryInfo}
+	p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	wantLayers := []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeLinkLayerDiscovery, LayerTypeLinkLayerDiscoveryInfo}
 	checkLayers(p, wantLayers, t)
 	lldpL := p.Layer(LayerTypeLinkLayerDiscovery)
 	lldp := lldpL.(*LinkLayerDiscovery)
@@ -823,8 +823,8 @@ func TestDecodeLinkLayerDiscovery(t *testing.T) {
 		0x00, 0x41, 0x00, 0x00,
 	}
 
-	p = gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	wantLayers = []gopacket.LayerType{LayerTypeEthernet, LayerTypeLinkLayerDiscovery, LayerTypeLinkLayerDiscoveryInfo}
+	p = gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	wantLayers = []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeLinkLayerDiscovery, LayerTypeLinkLayerDiscoveryInfo}
 	checkLayers(p, wantLayers, t)
 	lldpL = p.Layer(LayerTypeLinkLayerDiscovery)
 	lldp = lldpL.(*LinkLayerDiscovery)
@@ -910,8 +910,8 @@ func TestDecodeNortelDiscovery(t *testing.T) {
 		0x00, 0x04, 0x38, 0xe0, 0xcc, 0xde, 0x80, 0x6a, 0x00, 0x01, 0x14, 0x00,
 		0x02, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	}
-	p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	wantLayers := []gopacket.LayerType{LayerTypeEthernet, LayerTypeLLC, LayerTypeSNAP, LayerTypeNortelDiscovery}
+	p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	wantLayers := []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeLLC, LayerTypeSNAP, LayerTypeNortelDiscovery}
 	checkLayers(p, wantLayers, t)
 
 	want := &NortelDiscovery{
@@ -940,8 +940,8 @@ func TestDecodeIPv6Jumbogram(t *testing.T) {
 	dataStr := "\x00\x1f\xca\xb3v@$\xbe\x05'\x0b\x17\x86\xdd`\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x06\x00\xc2\x04\x00\x01\x11p\"\xb8\x00P\x00\x00\x00\x00\x00\x00\x00\x00P\x02 \x00l\xd8\x00\x00"
 	payload := strings.Repeat("payload", 9996)
 	data := []byte(dataStr + payload)
-	p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeIPv6HopByHop, LayerTypeTCP, gopacket.LayerTypePayload}, t)
+	p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeIPv6HopByHop, LayerTypeTCP, gopacket_dpdk.LayerTypePayload}, t)
 	if p.ApplicationLayer() == nil {
 		t.Error("Packet has no application layer")
 	} else if string(p.ApplicationLayer().Payload()) != payload {
@@ -949,8 +949,8 @@ func TestDecodeIPv6Jumbogram(t *testing.T) {
 	}
 	// Check truncated for jumbograms
 	data = data[:len(data)-1]
-	p = gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeIPv6HopByHop, LayerTypeTCP, gopacket.LayerTypePayload}, t)
+	p = gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeIPv6HopByHop, LayerTypeTCP, gopacket_dpdk.LayerTypePayload}, t)
 	if !p.Metadata().Truncated {
 		t.Error("Jumbogram should be truncated")
 	}
@@ -964,16 +964,16 @@ func TestDecodeUDPPacketTooSmall(t *testing.T) {
 		0x00, 0x01, 0x00, 0x72, 0xd5, 0xc7, 0xf1, 0x07, 0x00, 0x00, 0x01, 0x01, 0x00, 0x0d, 0x00, 0x00,
 		0x00, 0x14, 0x00, 0x00, 0x19, 0xba,
 	}
-	p := gopacket.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeDot1Q, LayerTypeIPv4, LayerTypeUDP, gopacket.LayerTypePayload}, t)
+	p := gopacket_dpdk.NewPacket(data, LinkTypeEthernet, testDecodeOptions)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeDot1Q, LayerTypeIPv4, LayerTypeUDP, gopacket_dpdk.LayerTypePayload}, t)
 	if !p.Metadata().Truncated {
 		t.Error("UDP short packet should be truncated")
 	}
 }
 
 func TestDecodingLayerParserFullTCPPacket(t *testing.T) {
-	dlp := gopacket.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket.Payload{})
-	decoded := make([]gopacket.LayerType, 1)
+	dlp := gopacket_dpdk.NewDecodingLayerParser(LayerTypeEthernet, &Ethernet{}, &IPv4{}, &TCP{}, &gopacket_dpdk.Payload{})
+	decoded := make([]gopacket_dpdk.LayerType, 1)
 	err := dlp.DecodeLayers(testSimpleTCPPacket, &decoded)
 	if err != nil {
 		t.Error("Error from dlp parser: ", err)
@@ -1000,16 +1000,16 @@ var testICMP = []byte{
 }
 
 func TestICMP(t *testing.T) {
-	p := gopacket.NewPacket(testICMP, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testICMP, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeICMPv4, gopacket.LayerTypePayload}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeICMPv4, gopacket_dpdk.LayerTypePayload}, t)
 	testSerialization(t, p, testICMP)
 }
 func BenchmarkDecodeICMP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testICMP, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testICMP, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 
@@ -1032,16 +1032,16 @@ var testICMP6 = []byte{
 }
 
 func TestICMP6(t *testing.T) {
-	p := gopacket.NewPacket(testICMP6, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testICMP6, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeICMPv6, gopacket.LayerTypePayload}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeICMPv6, gopacket_dpdk.LayerTypePayload}, t)
 	testSerialization(t, p, testICMP6)
 }
 func BenchmarkDecodeICMP6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testICMP6, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testICMP6, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 
@@ -1068,16 +1068,16 @@ var testMPLS = []byte{
 }
 
 func TestMPLS(t *testing.T) {
-	p := gopacket.NewPacket(testMPLS, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testMPLS, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeMPLS, LayerTypeIPv4, LayerTypeICMPv4, gopacket.LayerTypePayload}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeMPLS, LayerTypeIPv4, LayerTypeICMPv4, gopacket_dpdk.LayerTypePayload}, t)
 	testSerialization(t, p, testMPLS)
 }
 func BenchmarkDecodeMPLS(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testMPLS, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testMPLS, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 
@@ -1100,23 +1100,23 @@ var testPPPoE_ICMPv6 = []byte{
 }
 
 func TestPPPoE_ICMPv6(t *testing.T) {
-	p := gopacket.NewPacket(testPPPoE_ICMPv6, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testPPPoE_ICMPv6, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{
+	checkLayers(p, []gopacket_dpdk.LayerType{
 		LayerTypeEthernet,
 		LayerTypePPPoE,
 		LayerTypePPP,
 		LayerTypeIPv6,
 		LayerTypeICMPv6,
-		gopacket.LayerTypePayload,
+		gopacket_dpdk.LayerTypePayload,
 	}, t)
 	testSerialization(t, p, testPPPoE_ICMPv6)
 }
 func BenchmarkDecodePPPoE_ICMPv6(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testPPPoE_ICMPv6, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testPPPoE_ICMPv6, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 
@@ -1132,15 +1132,15 @@ var testPFLog_UDP = []byte{
 
 func TestPFLog_UDP(t *testing.T) {
 	t.Skip()
-	p := gopacket.NewPacket(testPFLog_UDP, LinkTypePFLog, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testPFLog_UDP, LinkTypePFLog, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{
+	checkLayers(p, []gopacket_dpdk.LayerType{
 		LayerTypePFLog,
 		LayerTypeIPv4,
 		LayerTypeUDP,
-		gopacket.LayerTypePayload,
+		gopacket_dpdk.LayerTypePayload,
 	}, t)
 }
 
@@ -1148,9 +1148,9 @@ func TestRegressionDot1QPriority(t *testing.T) {
 	d := &Dot1Q{
 		Priority: 2,
 	}
-	out := gopacket.NewSerializeBuffer()
-	gopacket.SerializeLayers(out, gopacket.SerializeOptions{}, d)
-	if err := d.DecodeFromBytes(out.Bytes(), gopacket.NilDecodeFeedback); err != nil {
+	out := gopacket_dpdk.NewSerializeBuffer()
+	gopacket_dpdk.SerializeLayers(out, gopacket_dpdk.SerializeOptions{}, d)
+	if err := d.DecodeFromBytes(out.Bytes(), gopacket_dpdk.NilDecodeFeedback); err != nil {
 		t.Errorf("could not decode encoded dot1q")
 	} else if d.Priority != 2 {
 		t.Errorf("priority mismatch, want 2 got %d", d.Priority)
@@ -1182,17 +1182,17 @@ var testPacketMPLSInMPLS = []byte{
 }
 
 func TestPacketMPLSInMPLS(t *testing.T) {
-	p := gopacket.NewPacket(testPacketMPLSInMPLS, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testPacketMPLSInMPLS, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{
+	checkLayers(p, []gopacket_dpdk.LayerType{
 		LayerTypeEthernet,
 		LayerTypeMPLS,
 		LayerTypeMPLS,
 		LayerTypeIPv4,
 		LayerTypeICMPv4,
-		gopacket.LayerTypePayload}, t)
+		gopacket_dpdk.LayerTypePayload}, t)
 }
 
 // testPacketIPv4Fragmented is the packet:
@@ -1212,12 +1212,12 @@ var testPacketIPv4Fragmented = []byte{
 }
 
 func TestPacketIPv4Fragmented(t *testing.T) {
-	p := gopacket.NewPacket(testPacketIPv4Fragmented, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testPacketIPv4Fragmented, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4, gopacket.LayerTypeFragment}, t)
-	testSerializationWithOpts(t, p, testPacketIPv4Fragmented, gopacket.SerializeOptions{FixLengths: true, ComputeChecksums: true})
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4, gopacket_dpdk.LayerTypeFragment}, t)
+	testSerializationWithOpts(t, p, testPacketIPv4Fragmented, gopacket_dpdk.SerializeOptions{FixLengths: true, ComputeChecksums: true})
 }
 
 // testPacketDNSRegression is the packet:
@@ -1239,14 +1239,14 @@ var testPacketDNSRegression = []byte{
 }
 
 func TestPacketDNSRegression(t *testing.T) {
-	p := gopacket.NewPacket(testPacketDNSRegression, LinkTypeEthernet, testDecodeOptions)
+	p := gopacket_dpdk.NewPacket(testPacketDNSRegression, LinkTypeEthernet, testDecodeOptions)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeUDP, LayerTypeDNS}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeUDP, LayerTypeDNS}, t)
 }
 func BenchmarkDecodePacketDNSRegression(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testPacketDNSRegression, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testPacketDNSRegression, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }

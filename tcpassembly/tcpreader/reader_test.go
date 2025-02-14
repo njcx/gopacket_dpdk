@@ -9,18 +9,18 @@ package tcpreader
 import (
 	"bytes"
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/tcpassembly"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/tcpassembly"
 	"io"
 	"net"
 	"testing"
 )
 
-var netFlow gopacket.Flow
+var netFlow gopacket_dpdk.Flow
 
 func init() {
-	netFlow, _ = gopacket.FlowFromEndpoints(
+	netFlow, _ = gopacket_dpdk.FlowFromEndpoints(
 		layers.NewIPEndpoint(net.IP{1, 2, 3, 4}),
 		layers.NewIPEndpoint(net.IP{5, 6, 7, 8}))
 }
@@ -40,7 +40,7 @@ type testReaderFactory struct {
 	output chan []byte
 }
 
-func (t *testReaderFactory) New(a, b gopacket.Flow) tcpassembly.Stream {
+func (t *testReaderFactory) New(a, b gopacket_dpdk.Flow) tcpassembly.Stream {
 	return &t.ReaderStream
 }
 

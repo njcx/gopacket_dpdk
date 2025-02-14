@@ -8,9 +8,9 @@ package pcap
 
 import (
 	"bytes"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcapgo"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcapgo"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -23,7 +23,7 @@ func TestPCAPGoWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := []byte{0xab, 0xcd, 0xef, 0x01, 0x02, 0x03, 0x04}
-	ci := gopacket.CaptureInfo{
+	ci := gopacket_dpdk.CaptureInfo{
 		Timestamp:     time.Unix(12345667, 1234567000),
 		Length:        700,
 		CaptureLength: len(data),

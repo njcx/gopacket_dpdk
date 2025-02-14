@@ -9,7 +9,7 @@ package layers
 
 import (
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // Checksum computation for TCP/UDP.
@@ -81,7 +81,7 @@ func (c *tcpipchecksum) computeChecksum(headerAndPayload []byte) (uint16, error)
 // This is needed for computing the checksum when serializing, since TCP/IP transport
 // layer checksums depends on fields in the IPv4 or IPv6 layer that contains it.
 // The passed in layer must be an *IPv4 or *IPv6.
-func (i *tcpipchecksum) SetNetworkLayerForChecksum(l gopacket.NetworkLayer) error {
+func (i *tcpipchecksum) SetNetworkLayerForChecksum(l gopacket_dpdk.NetworkLayer) error {
 	switch v := l.(type) {
 	case *IPv4:
 		i.pseudoheader = v

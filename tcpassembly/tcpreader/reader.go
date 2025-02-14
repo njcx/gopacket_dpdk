@@ -18,7 +18,7 @@
 //
 //	// Create our StreamFactory
 //	type httpStreamFactory struct {}
-//	func (f *httpStreamFactory) New(a, b gopacket.Flow) {
+//	func (f *httpStreamFactory) New(a, b gopacket_dpdk.Flow) {
 //		r := tcpreader.NewReaderStream(false)
 //		go printRequests(r)
 //		return &r
@@ -46,7 +46,7 @@ package tcpreader
 
 import (
 	"errors"
-	"github.com/njcx/gopacket/tcpassembly"
+	"github.com/njcx/gopacket_dpdk/tcpassembly"
 	"io"
 )
 
@@ -96,7 +96,7 @@ func DiscardBytesToEOF(r io.Reader) (discarded int) {
 //		// will block.
 //		fmt.Println(tcpreader.DiscardBytesToEOF(&m.r))
 //	}
-//	func (f *myStreamFactory) New(a, b gopacket.Flow) tcpassembly.Stream {
+//	func (f *myStreamFactory) New(a, b gopacket_dpdk.Flow) tcpassembly.Stream {
 //		s := &myStreamHandler{}
 //		go s.run()
 //		// Return the ReaderStream as the stream that assembly should populate.

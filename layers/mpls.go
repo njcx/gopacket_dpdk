@@ -9,7 +9,7 @@ package layers
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // MPLS is the MPLS packet header.
@@ -21,8 +21,8 @@ type MPLS struct {
 	TTL          uint8
 }
 
-// LayerType returns gopacket.LayerTypeMPLS.
-func (m *MPLS) LayerType() gopacket.LayerType { return LayerTypeMPLS }
+// LayerType returns gopacket_dpdk.LayerTypeMPLS.
+func (m *MPLS) LayerType() gopacket_dpdk.LayerType { return LayerTypeMPLS }
 
 // ProtocolGuessingDecoder attempts to guess the protocol of the bytes it's
 // given, then decode the packet accordingly.  Its algorithm for guessing is:
@@ -34,7 +34,7 @@ func (m *MPLS) LayerType() gopacket.LayerType { return LayerTypeMPLS }
 // See draft-hsmit-isis-aal5mux-00.txt for more detail on this approach.
 type ProtocolGuessingDecoder struct{}
 
-func (ProtocolGuessingDecoder) Decode(data []byte, p gopacket.PacketBuilder) error {
+func (ProtocolGuessingDecoder) Decode(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	switch data[0] {
 	// 0x40 | header_len, where header_len is at least 5.
 	case 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f:
@@ -52,9 +52,9 @@ func (ProtocolGuessingDecoder) Decode(data []byte, p gopacket.PacketBuilder) err
 // simple attempt at guessing protocols based on the first few bytes of data
 // available to us.  However, if you know that in your environment MPLS always
 // encapsulates a specific protocol, you may reset this.
-var MPLSPayloadDecoder gopacket.Decoder = ProtocolGuessingDecoder{}
+var MPLSPayloadDecoder gopacket_dpdk.Decoder = ProtocolGuessingDecoder{}
 
-func decodeMPLS(data []byte, p gopacket.PacketBuilder) error {
+func decodeMPLS(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	decoded := binary.BigEndian.Uint32(data[:4])
 	mpls := &MPLS{
 		Label:        decoded >> 12,
@@ -67,13 +67,13 @@ func decodeMPLS(data []byte, p gopacket.PacketBuilder) error {
 	if mpls.StackBottom {
 		return p.NextDecoder(MPLSPayloadDecoder)
 	}
-	return p.NextDecoder(gopacket.DecodeFunc(decodeMPLS))
+	return p.NextDecoder(gopacket_dpdk.DecodeFunc(decodeMPLS))
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (m *MPLS) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (m *MPLS) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	bytes, err := b.PrependBytes(4)
 	if err != nil {
 		return err

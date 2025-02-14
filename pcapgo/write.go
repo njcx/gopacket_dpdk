@@ -11,8 +11,8 @@ package pcapgo
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"io"
 )
 
@@ -38,13 +38,13 @@ const versionMinor = 4
 //	f, _ := os.Create("/tmp/file.pcap")
 //	w := pcapgo.NewWriter(f)
 //	w.WriteFileHeader(65536, layers.LinkTypeEthernet)  // new file, must do this.
-//	w.WritePacket(gopacket.CaptureInfo{...}, data1)
+//	w.WritePacket(gopacket_dpdk.CaptureInfo{...}, data1)
 //	f.Close()
 //	// Append to existing file (must have same snaplen and linktype)
 //	f2, _ := os.OpenFile("/tmp/file.pcap", os.O_APPEND, 0700)
 //	w2 := pcapgo.NewWriter(f2)
 //	// no need for file header, it's already written.
-//	w2.WritePacket(gopacket.CaptureInfo{...}, data2)
+//	w2.WritePacket(gopacket_dpdk.CaptureInfo{...}, data2)
 //	f2.Close()
 func NewWriter(w io.Writer) *Writer {
 	return &Writer{w: w}
@@ -69,7 +69,7 @@ func (w *Writer) WriteFileHeader(snaplen uint32, linktype layers.LinkType) error
 const nanosPerMicro = 1000
 const microsPerSecond = 1000000
 
-func (w *Writer) writePacketHeader(ci gopacket.CaptureInfo) error {
+func (w *Writer) writePacketHeader(ci gopacket_dpdk.CaptureInfo) error {
 	var buf [16]byte
 	micros := ci.Timestamp.UnixNano() / nanosPerMicro
 	secs, usecs := uint32(micros/microsPerSecond), uint32(micros%microsPerSecond)
@@ -82,7 +82,7 @@ func (w *Writer) writePacketHeader(ci gopacket.CaptureInfo) error {
 }
 
 // WritePacket writes the given packet data out to the file.
-func (w *Writer) WritePacket(ci gopacket.CaptureInfo, data []byte) error {
+func (w *Writer) WritePacket(ci gopacket_dpdk.CaptureInfo, data []byte) error {
 	if ci.CaptureLength != len(data) {
 		return fmt.Errorf("capture length %d does not match data length %d", ci.CaptureLength, len(data))
 	}

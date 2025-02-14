@@ -8,7 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // PPPoE is the layer for PPPoE encapsulation headers.
@@ -21,13 +21,13 @@ type PPPoE struct {
 	Length    uint16
 }
 
-// LayerType returns gopacket.LayerTypePPPoE.
-func (p *PPPoE) LayerType() gopacket.LayerType {
+// LayerType returns gopacket_dpdk.LayerTypePPPoE.
+func (p *PPPoE) LayerType() gopacket_dpdk.LayerType {
 	return LayerTypePPPoE
 }
 
 // decodePPPoE decodes the PPPoE header (see http://tools.ietf.org/html/rfc2516).
-func decodePPPoE(data []byte, p gopacket.PacketBuilder) error {
+func decodePPPoE(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	pppoe := &PPPoE{
 		Version:   data[0] >> 4,
 		Type:      data[0] & 0x0F,
@@ -41,9 +41,9 @@ func decodePPPoE(data []byte, p gopacket.PacketBuilder) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (p *PPPoE) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (p *PPPoE) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	payload := b.Bytes()
 	bytes, err := b.PrependBytes(6)
 	if err != nil {

@@ -9,7 +9,7 @@ package layers
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // PPP is the layer for PPP encapsulation headers.
@@ -21,20 +21,20 @@ type PPP struct {
 // PPPEndpoint is a singleton endpoint for PPP.  Since there is no actual
 // addressing for the two ends of a PPP connection, we use a singleton value
 // named 'point' for each endpoint.
-var PPPEndpoint = gopacket.NewEndpoint(EndpointPPP, nil)
+var PPPEndpoint = gopacket_dpdk.NewEndpoint(EndpointPPP, nil)
 
 // PPPFlow is a singleton flow for PPP.  Since there is no actual addressing for
 // the two ends of a PPP connection, we use a singleton value to represent the
 // flow for all PPP connections.
-var PPPFlow = gopacket.NewFlow(EndpointPPP, nil, nil)
+var PPPFlow = gopacket_dpdk.NewFlow(EndpointPPP, nil, nil)
 
 // LayerType returns LayerTypePPP
-func (p *PPP) LayerType() gopacket.LayerType { return LayerTypePPP }
+func (p *PPP) LayerType() gopacket_dpdk.LayerType { return LayerTypePPP }
 
 // LinkFlow returns PPPFlow.
-func (p *PPP) LinkFlow() gopacket.Flow { return PPPFlow }
+func (p *PPP) LinkFlow() gopacket_dpdk.Flow { return PPPFlow }
 
-func decodePPP(data []byte, p gopacket.PacketBuilder) error {
+func decodePPP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	ppp := &PPP{}
 	if data[0]&0x1 == 0 {
 		if data[1]&0x1 == 0 {
@@ -54,9 +54,9 @@ func decodePPP(data []byte, p gopacket.PacketBuilder) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (p *PPP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (p *PPP) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	if p.PPPType&0x100 == 0 {
 		bytes, err := b.PrependBytes(2)
 		if err != nil {

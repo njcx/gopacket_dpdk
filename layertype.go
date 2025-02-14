@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
+package gopacket_dpdk
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 // usable/useful within this library as a means for requesting layer types
 // (see Packet.Layer) and determining which types of layers have been decoded.
 //
-// New LayerTypes may be created by calling gopacket.RegisterLayerType.
+// New LayerTypes may be created by calling gopacket_dpdk.RegisterLayerType.
 type LayerType int64
 
 // LayerTypeMetadata contains metadata associated with each LayerType.
@@ -45,7 +45,7 @@ var ltMetaMap = map[LayerType]layerTypeMetadata{}
 
 // RegisterLayerType creates a new layer type and registers it globally.
 // The number passed in must be unique, or a runtime panic will occur.  Numbers
-// 0-999 are reserved for the gopacket library.  Numbers 1000-1999 should be
+// 0-999 are reserved for the gopacket_dpdk library.  Numbers 1000-1999 should be
 // used for common application-specific types, and are very fast.  Any other
 // number (negative or >= 2000) may be used for uncommon application-specific
 // types, and are somewhat slower (they require a map lookup over an array

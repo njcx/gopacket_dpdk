@@ -10,7 +10,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 const (
@@ -33,10 +33,10 @@ type ARP struct {
 }
 
 // LayerType returns LayerTypeARP
-func (arp *ARP) LayerType() gopacket.LayerType { return LayerTypeARP }
+func (arp *ARP) LayerType() gopacket_dpdk.LayerType { return LayerTypeARP }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (arp *ARP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (arp *ARP) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	arp.AddrType = LinkType(binary.BigEndian.Uint16(data[0:2]))
 	arp.Protocol = EthernetType(binary.BigEndian.Uint16(data[2:4]))
 	arp.HwAddressSize = data[4]
@@ -54,9 +54,9 @@ func (arp *ARP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (arp *ARP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (arp *ARP) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	size := 8 + len(arp.SourceHwAddress) + len(arp.SourceProtAddress) + len(arp.DstHwAddress) + len(arp.DstProtAddress)
 	bytes, err := b.PrependBytes(size)
 	if err != nil {
@@ -91,16 +91,16 @@ func (arp *ARP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeO
 }
 
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
-func (arp *ARP) CanDecode() gopacket.LayerClass {
+func (arp *ARP) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeARP
 }
 
 // NextLayerType returns the layer type contained by this DecodingLayer.
-func (arp *ARP) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypePayload
+func (arp *ARP) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypePayload
 }
 
-func decodeARP(data []byte, p gopacket.PacketBuilder) error {
+func decodeARP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 
 	arp := &ARP{}
 	return decodingLayerDecoder(arp, data, p)

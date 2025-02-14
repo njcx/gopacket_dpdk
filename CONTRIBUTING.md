@@ -1,9 +1,9 @@
-Contributing To gopacket
+Contributing To gopacket_dpdk
 ========================
 
-So you've got some code and you'd like it to be part of gopacket... wonderful!
+So you've got some code and you'd like it to be part of gopacket_dpdk... wonderful!
 We're happy to accept contributions, whether they're fixes to old protocols, new
-protocols entirely, or anything else you think would improve the gopacket
+protocols entirely, or anything else you think would improve the gopacket_dpdk
 library.  This document is designed to help you to do just that.
 
 The first section deals with the plumbing:  how to actually get a change
@@ -26,31 +26,31 @@ so the code can make it into the master branch as quickly as possible.
 How To Submit Code
 ------------------
 
-gopacket uses the code.google.com Git version control system.  If you want to
+gopacket_dpdk uses the code.google.com Git version control system.  If you want to
 make a new change, you'll first have to get our code:
 
-    go get code.google.com/p/gopacket
-    cd $GOROOT/src/pkg/code.google.com/p/gopacket
+    go get code.google.com/p/gopacket_dpdk
+    cd $GOROOT/src/pkg/code.google.com/p/gopacket_dpdk
     git checkout -b <mynewfeature>  # create a new branch to work from
     ... code code code ...
     ./gc  # Run this to do local commits, it performs a number of checks
     ... code code code ...
     ./gc --benchmark  # Run this whenever your commit could affect performance
 
-Nw that you're in the gopacket code directory, you can start making your initial
+Nw that you're in the gopacket_dpdk code directory, you can start making your initial
 change.  PLEASE make sure you're using a new branch to develop whatever feature
 you're working on.
 
 Once you've got your code to a place where you're ready to have us look at it,
-send an email to gopacket@googlegroups.com, detailing your change.  We'll add
+send an email to gopacket_dpdk@googlegroups.com, detailing your change.  We'll add
 you as a committer, and you can upload your feature branch to code.google.com.
-From there, the other folks working on gopacket can give you code reviews with
+From there, the other folks working on gopacket_dpdk can give you code reviews with
 the code.google.com code review functionality.
 
 The code review will generally be either emails or line-by-line reviews via
 code.google.com.  One or more folks might review your code.  The review should
 be considered "complete" when at least one of the project Owners (see
-https://code.google.com/p/gopacket/people/list) gives you permission to merge to
+https://code.google.com/p/gopacket_dpdk/people/list) gives you permission to merge to
 master.  At that point, you can merge to master yourself, or you can have one of
 the other committers/owners do it for you.
 
@@ -111,7 +111,7 @@ Often, you'll already have decode some part of your protocol by the time you hit
 your error.  Use your own discretion to determine whether the stuff you've
 already decoded should be returned to the caller or not:
 
-    func decodeMyProtocol(data []byte, p gopacket.PacketBuilder) error {
+    func decodeMyProtocol(data []byte, p gopacket_dpdk.PacketBuilder) error {
       prot := &MyProtocol{}
       if len(data) < 10 {
         // This error occurred before we did ANYTHING, so there's nothing in my
@@ -146,7 +146,7 @@ your decisions during code review. ;)
 
 ### Performance
 
-We strive to make gopacket as fast as possible while still providing lots of
+We strive to make gopacket_dpdk as fast as possible while still providing lots of
 features.  In general, this means:
 
 * Focus performance tuning on common protocols (IP4/6, TCP, etc), and optimize
@@ -155,7 +155,7 @@ features.  In general, this means:
 * Use fast operations.  See the toplevel benchmark_test for benchmarks of some
   of Go's underlying features and types.
 * Test your performance changes!  You should use the ./gc script's --benchmark
-  flag to submit any performance-related changes.  Use pcap/gopacket_benchmark
+  flag to submit any performance-related changes.  Use pcap/gopacket_dpdk_benchmark
   to test your change against a PCAP file based on your traffic patterns.
 * Don't be TOO hacky.  Sometimes, removing an unused struct from a field causes
   a huge performance hit, due to the way that Go currently handles its segmented
@@ -182,7 +182,7 @@ features.  In general, this means:
       VeryCommon []uint32
     }
 
-    func decodeMyProtocol(data []byte, p gopacket.PacketBuilder) error {
+    func decodeMyProtocol(data []byte, p gopacket_dpdk.PacketBuilder) error {
       prot := &MyProtocol{}
       prot.VeryCommon = proto.initialAllocation[:0]
       for len(data) > 4 {
@@ -208,7 +208,7 @@ use the slice itself.
     type MyProtocol struct {
       A, B net.IP
     }
-    func decodeMyProtocol(data []byte, p gopacket.PacketBuilder) error {
+    func decodeMyProtocol(data []byte, p gopacket_dpdk.PacketBuilder) error {
       p.AddLayer(&MyProtocol{
         A: data[:4],
         B: data[4:8],

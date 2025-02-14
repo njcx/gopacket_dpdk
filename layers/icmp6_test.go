@@ -8,7 +8,7 @@
 package layers
 
 import (
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 	"reflect"
 	"testing"
@@ -31,11 +31,11 @@ var testPacketICMPv6 = []byte{
 }
 
 func TestPacketICMPv6(t *testing.T) {
-	p := gopacket.NewPacket(testPacketICMPv6, LinkTypeEthernet, gopacket.Default)
+	p := gopacket_dpdk.NewPacket(testPacketICMPv6, LinkTypeEthernet, gopacket_dpdk.Default)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeICMPv6, gopacket.LayerTypePayload}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv6, LayerTypeICMPv6, gopacket_dpdk.LayerTypePayload}, t)
 	if got, ok := p.Layer(LayerTypeIPv6).(*IPv6); ok {
 		want := &IPv6{
 			BaseLayer: BaseLayer{

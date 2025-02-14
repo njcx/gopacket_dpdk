@@ -9,7 +9,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // Loopback contains the header for loopback encapsulation.  This header is
@@ -21,9 +21,9 @@ type Loopback struct {
 }
 
 // LayerType returns LayerTypeLoopback.
-func (l *Loopback) LayerType() gopacket.LayerType { return LayerTypeLoopback }
+func (l *Loopback) LayerType() gopacket_dpdk.LayerType { return LayerTypeLoopback }
 
-func (l *Loopback) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (l *Loopback) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	if len(data) < 4 {
 		return fmt.Errorf("Loopback packet too small")
 	}
@@ -44,15 +44,15 @@ func (l *Loopback) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) erro
 
 	return nil
 }
-func (l *Loopback) CanDecode() gopacket.LayerClass {
+func (l *Loopback) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeLoopback
 }
 
-func (l *Loopback) NextLayerType() gopacket.LayerType {
+func (l *Loopback) NextLayerType() gopacket_dpdk.LayerType {
 	return l.Family.LayerType()
 }
 
-func decodeLoopback(data []byte, p gopacket.PacketBuilder) error {
+func decodeLoopback(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	// The protocol could be either big-endian or little-endian, we're
 	// not sure.  But we're PRETTY sure that the value is less than
 	// 256, so we can check the first two bytes.

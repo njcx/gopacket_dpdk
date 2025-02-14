@@ -10,7 +10,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"strconv"
 )
 
@@ -43,22 +43,22 @@ type ICMPv4 struct {
 	Seq      uint16
 }
 
-// LayerType returns gopacket.LayerTypeICMPv4
-func (i *ICMPv4) LayerType() gopacket.LayerType { return LayerTypeICMPv4 }
+// LayerType returns gopacket_dpdk.LayerTypeICMPv4
+func (i *ICMPv4) LayerType() gopacket_dpdk.LayerType { return LayerTypeICMPv4 }
 
-func decodeICMPv4(data []byte, p gopacket.PacketBuilder) error {
+func decodeICMPv4(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &ICMPv4{}
 	err := i.DecodeFromBytes(data, p)
 	if err != nil {
 		return err
 	}
 	p.AddLayer(i)
-	return p.NextDecoder(gopacket.LayerTypePayload)
+	return p.NextDecoder(gopacket_dpdk.LayerTypePayload)
 }
 
 var tooShort error = fmt.Errorf("icmp layer less than 8 bytes")
 
-func (i *ICMPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (i *ICMPv4) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	if len(data) < 8 {
 		df.SetTruncated()
 		return tooShort
@@ -72,9 +72,9 @@ func (i *ICMPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (i *ICMPv4) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (i *ICMPv4) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	bytes, err := b.PrependBytes(8)
 	if err != nil {
 		return err
@@ -91,12 +91,12 @@ func (i *ICMPv4) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.Serialize
 	return nil
 }
 
-func (i *ICMPv4) CanDecode() gopacket.LayerClass {
+func (i *ICMPv4) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeICMPv4
 }
 
-func (i *ICMPv4) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypePayload
+func (i *ICMPv4) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypePayload
 }
 
 func (a ICMPv4TypeCode) String() string {

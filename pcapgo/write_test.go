@@ -8,7 +8,7 @@ package pcapgo
 
 import (
 	"bytes"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"testing"
 	"time"
 )
@@ -28,7 +28,7 @@ func TestWriteHeader(t *testing.T) {
 }
 
 func TestWritePacket(t *testing.T) {
-	ci := gopacket.CaptureInfo{
+	ci := gopacket_dpdk.CaptureInfo{
 		Timestamp:     time.Unix(0x01020304, 0xAA*1000),
 		Length:        0xABCD,
 		CaptureLength: 10,
@@ -50,13 +50,13 @@ func TestWritePacket(t *testing.T) {
 func TestCaptureInfoErrors(t *testing.T) {
 	data := []byte{1, 2, 3, 4}
 	ts := time.Unix(0, 0)
-	for _, test := range []gopacket.CaptureInfo{
-		gopacket.CaptureInfo{
+	for _, test := range []gopacket_dpdk.CaptureInfo{
+		gopacket_dpdk.CaptureInfo{
 			Timestamp:     ts,
 			Length:        5,
 			CaptureLength: 5,
 		},
-		gopacket.CaptureInfo{
+		gopacket_dpdk.CaptureInfo{
 			Timestamp:     ts,
 			Length:        3,
 			CaptureLength: 4,

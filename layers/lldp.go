@@ -10,7 +10,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // LLDPTLVType is the type of each TLV value in a LinkLayerDiscovery packet.
@@ -727,12 +727,12 @@ type LLDPInfoProfinet struct {
 	PNIOPTCPStatus    LLDPPNIOPTCPStatus
 }
 
-// LayerType returns gopacket.LayerTypeLinkLayerDiscovery.
-func (c *LinkLayerDiscovery) LayerType() gopacket.LayerType {
+// LayerType returns gopacket_dpdk.LayerTypeLinkLayerDiscovery.
+func (c *LinkLayerDiscovery) LayerType() gopacket_dpdk.LayerType {
 	return LayerTypeLinkLayerDiscovery
 }
 
-func decodeLinkLayerDiscovery(data []byte, p gopacket.PacketBuilder) error {
+func decodeLinkLayerDiscovery(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	var vals []LinkLayerDiscoveryValue
 	vData := data[0:]
 	for len(vData) > 0 {
@@ -1136,8 +1136,8 @@ func (l *LinkLayerDiscoveryInfo) DecodeProfinet() (info LLDPInfoProfinet, err er
 	return
 }
 
-// LayerType returns gopacket.LayerTypeLinkLayerDiscoveryInfo.
-func (c *LinkLayerDiscoveryInfo) LayerType() gopacket.LayerType {
+// LayerType returns gopacket_dpdk.LayerTypeLinkLayerDiscoveryInfo.
+func (c *LinkLayerDiscoveryInfo) LayerType() gopacket_dpdk.LayerType {
 	return LayerTypeLinkLayerDiscoveryInfo
 }
 

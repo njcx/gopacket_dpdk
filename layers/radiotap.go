@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // align calculates the number of bytes needed to align with the width
@@ -259,7 +259,7 @@ func (a RadioTapChannelFrequency) String() string {
 	return fmt.Sprintf("%d MHz", a)
 }
 
-func decodeRadioTap(data []byte, p gopacket.PacketBuilder) error {
+func decodeRadioTap(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	d := &RadioTap{}
 	// TODO: Should we set LinkLayer here? And implement LinkFlow
 	return decodingLayerDecoder(d, data, p)
@@ -304,9 +304,9 @@ type RadioTap struct {
 	DBAntennaNoise uint8
 }
 
-func (m *RadioTap) LayerType() gopacket.LayerType { return LayerTypeRadioTap }
+func (m *RadioTap) LayerType() gopacket_dpdk.LayerType { return LayerTypeRadioTap }
 
-func (m *RadioTap) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (m *RadioTap) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	m.Version = uint8(data[0])
 	m.Length = binary.LittleEndian.Uint16(data[2:4])
 	m.Present = RadioTapPresent(binary.LittleEndian.Uint32(data[4:8]))
@@ -409,5 +409,5 @@ func (m *RadioTap) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) erro
 	return nil
 }
 
-func (m *RadioTap) CanDecode() gopacket.LayerClass    { return LayerTypeRadioTap }
-func (m *RadioTap) NextLayerType() gopacket.LayerType { return LayerTypeDot11 }
+func (m *RadioTap) CanDecode() gopacket_dpdk.LayerClass    { return LayerTypeRadioTap }
+func (m *RadioTap) NextLayerType() gopacket_dpdk.LayerType { return LayerTypeDot11 }

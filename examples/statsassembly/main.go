@@ -4,22 +4,22 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-// This binary provides sample code for using the gopacket TCP assembler raw,
+// This binary provides sample code for using the gopacket_dpdk TCP assembler raw,
 // without the help of the tcpreader library.  It watches TCP streams and
 // reports statistics on completed streams.
 //
-// It also uses gopacket.DecodingLayerParser instead of the normal
-// gopacket.PacketSource, to highlight the methods, pros, and cons of this
+// It also uses gopacket_dpdk.DecodingLayerParser instead of the normal
+// gopacket_dpdk.PacketSource, to highlight the methods, pros, and cons of this
 // approach.
 package main
 
 import (
 	"flag"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/examples/util"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
-	"github.com/njcx/gopacket/tcpassembly"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/examples/util"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
+	"github.com/njcx/gopacket_dpdk/tcpassembly"
 	"log"
 	"time"
 )
@@ -49,7 +49,7 @@ type statsStreamFactory struct{}
 
 // statsStream will handle the actual decoding of stats requests.
 type statsStream struct {
-	net, transport                      gopacket.Flow
+	net, transport                      gopacket_dpdk.Flow
 	bytes, packets, outOfOrder, skipped int64
 	start, end                          time.Time
 	sawStart, sawEnd                    bool
@@ -57,7 +57,7 @@ type statsStream struct {
 
 // New creates a new stream.  It's called whenever the assembler sees a stream
 // it isn't currently following.
-func (factory *statsStreamFactory) New(net, transport gopacket.Flow) tcpassembly.Stream {
+func (factory *statsStreamFactory) New(net, transport gopacket_dpdk.Flow) tcpassembly.Stream {
 	log.Printf("new stream %v:%v started", net, transport)
 	s := &statsStream{
 		net:       net,
@@ -136,10 +136,10 @@ func main() {
 	var ip6 layers.IPv6
 	var ip6extensions layers.IPv6ExtensionSkipper
 	var tcp layers.TCP
-	var payload gopacket.Payload
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
+	var payload gopacket_dpdk.Payload
+	parser := gopacket_dpdk.NewDecodingLayerParser(layers.LayerTypeEthernet,
 		&eth, &dot1q, &ip4, &ip6, &ip6extensions, &tcp, &payload)
-	decoded := make([]gopacket.LayerType, 0, 4)
+	decoded := make([]gopacket_dpdk.LayerType, 0, 4)
 
 	nextFlush := time.Now().Add(flushDuration / 2)
 
@@ -186,7 +186,7 @@ loop:
 		// Find either the IPv4 or IPv6 address to use as our network
 		// layer.
 		foundNetLayer := false
-		var netFlow gopacket.Flow
+		var netFlow gopacket_dpdk.Flow
 		for _, typ := range decoded {
 			switch typ {
 			case layers.LayerTypeIPv4:

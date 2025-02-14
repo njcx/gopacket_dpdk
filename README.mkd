@@ -1,4 +1,4 @@
-# GoPacket
+# gopacket_dpdk
 
 This library provides packet decoding capabilities for Go.
 See doc.go for more details.

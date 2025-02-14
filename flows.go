@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
+package gopacket_dpdk
 
 import (
 	"bytes"
@@ -105,7 +105,7 @@ type EndpointTypeMetadata struct {
 	Formatter func([]byte) string
 }
 
-// EndpointType is the type of a gopacket Endpoint.  This type determines how
+// EndpointType is the type of a gopacket_dpdk Endpoint.  This type determines how
 // the bytes stored in the endpoint should be interpreted.
 type EndpointType int64
 
@@ -113,7 +113,7 @@ var endpointTypes = map[EndpointType]EndpointTypeMetadata{}
 
 // RegisterEndpointType creates a new EndpointType and registers it globally.
 // It MUST be passed a unique number, or it will panic.  Numbers 0-999 are
-// reserved for gopacket's use.
+// reserved for gopacket_dpdk's use.
 func RegisterEndpointType(num int, meta EndpointTypeMetadata) EndpointType {
 	t := EndpointType(num)
 	if _, ok := endpointTypes[t]; ok {

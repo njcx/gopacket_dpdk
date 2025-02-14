@@ -7,18 +7,18 @@
 package tcpassembly
 
 import (
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"net"
 	"reflect"
 	"testing"
 	"time"
 )
 
-var netFlow gopacket.Flow
+var netFlow gopacket_dpdk.Flow
 
 func init() {
-	netFlow, _ = gopacket.FlowFromEndpoints(
+	netFlow, _ = gopacket_dpdk.FlowFromEndpoints(
 		layers.NewIPEndpoint(net.IP{1, 2, 3, 4}),
 		layers.NewIPEndpoint(net.IP{5, 6, 7, 8}))
 }
@@ -32,7 +32,7 @@ type testFactory struct {
 	reassembly []Reassembly
 }
 
-func (t *testFactory) New(a, b gopacket.Flow) Stream {
+func (t *testFactory) New(a, b gopacket_dpdk.Flow) Stream {
 	return t
 }
 func (t *testFactory) Reassembled(r []Reassembly) {

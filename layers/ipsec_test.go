@@ -7,7 +7,7 @@
 package layers
 
 import (
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"testing"
 )
 
@@ -38,14 +38,14 @@ var testPacketIPSecESP = []byte{
 }
 
 func TestPacketIPSecESP(t *testing.T) {
-	p := gopacket.NewPacket(testPacketIPSecESP, LinkTypeEthernet, gopacket.Default)
+	p := gopacket_dpdk.NewPacket(testPacketIPSecESP, LinkTypeEthernet, gopacket_dpdk.Default)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeIPSecESP}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeIPSecESP}, t)
 }
 func BenchmarkDecodePacketIPSecESP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testPacketIPSecESP, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testPacketIPSecESP, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // TCPPort is a port in a TCP layer.
@@ -59,13 +59,13 @@ func (a UDPPort) String() string {
 // LayerType returns a LayerType that would be able to decode the
 // application payload. It use some well-known port such as 53 for DNS.
 //
-// Returns gopacket.LayerTypePayload for unknown/unsupported port numbers.
-func (a UDPPort) LayerType() gopacket.LayerType {
+// Returns gopacket_dpdk.LayerTypePayload for unknown/unsupported port numbers.
+func (a UDPPort) LayerType() gopacket_dpdk.LayerType {
 	switch a {
 	case 53:
 		return LayerTypeDNS
 	default:
-		return gopacket.LayerTypePayload
+		return gopacket_dpdk.LayerTypePayload
 	}
 }
 

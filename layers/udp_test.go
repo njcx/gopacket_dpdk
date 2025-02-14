@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // testUDPPacketDNS is the packet:
@@ -55,11 +55,11 @@ var testUDPPacketDNS = []byte{
 }
 
 func TestUDPPacketDNS(t *testing.T) {
-	p := gopacket.NewPacket(testUDPPacketDNS, LinkTypeEthernet, gopacket.Default)
+	p := gopacket_dpdk.NewPacket(testUDPPacketDNS, LinkTypeEthernet, gopacket_dpdk.Default)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeUDP, LayerTypeDNS}, t)
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4, LayerTypeUDP, LayerTypeDNS}, t)
 	if got, ok := p.TransportLayer().(*UDP); ok {
 		want := &UDP{
 			BaseLayer: BaseLayer{
@@ -97,11 +97,11 @@ func TestUDPPacketDNS(t *testing.T) {
 }
 
 func loadDNS(dnspacket []byte, t *testing.T) *DNS {
-	p := gopacket.NewPacket(dnspacket, LinkTypeEthernet, gopacket.Default)
+	p := gopacket_dpdk.NewPacket(dnspacket, LinkTypeEthernet, gopacket_dpdk.Default)
 	if p.ErrorLayer() != nil {
 		t.Error("Failed to decode packet:", p.ErrorLayer().Error())
 	}
-	checkLayers(p, []gopacket.LayerType{LayerTypeEthernet, LayerTypeIPv4,
+	checkLayers(p, []gopacket_dpdk.LayerType{LayerTypeEthernet, LayerTypeIPv4,
 		LayerTypeUDP, LayerTypeDNS}, t)
 
 	dnsL := p.Layer(LayerTypeDNS)
@@ -353,19 +353,19 @@ func TestDNSMXSOA(t *testing.T) {
 
 func BenchmarkDecodeDNS(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		gopacket.NewPacket(testDNSQueryA, LinkTypeEthernet, gopacket.NoCopy)
+		gopacket_dpdk.NewPacket(testDNSQueryA, LinkTypeEthernet, gopacket_dpdk.NoCopy)
 	}
 }
 func BenchmarkDecodeDNSLayer(b *testing.B) {
 	var dns DNS
 	for i := 0; i < b.N; i++ {
-		dns.DecodeFromBytes(testDNSAAAA[ /*eth*/ 14+ /*ipv4*/ 20+ /*udp*/ 8:], gopacket.NilDecodeFeedback)
+		dns.DecodeFromBytes(testDNSAAAA[ /*eth*/ 14+ /*ipv4*/ 20+ /*udp*/ 8:], gopacket_dpdk.NilDecodeFeedback)
 	}
 }
 func TestDNSDoesNotMalloc(t *testing.T) {
 	var dns DNS
 	if n := testing.AllocsPerRun(1000, func() {
-		if err := dns.DecodeFromBytes(testDNSAAAA[ /*eth*/ 14+ /*ipv4*/ 20+ /*udp*/ 8:], gopacket.NilDecodeFeedback); err != nil {
+		if err := dns.DecodeFromBytes(testDNSAAAA[ /*eth*/ 14+ /*ipv4*/ 20+ /*udp*/ 8:], gopacket_dpdk.NilDecodeFeedback); err != nil {
 			t.Fatal(err)
 		}
 	}); n > 0 {

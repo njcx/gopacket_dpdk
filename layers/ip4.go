@@ -10,7 +10,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 	"strings"
 )
@@ -57,9 +57,9 @@ type IPv4 struct {
 }
 
 // LayerType returns LayerTypeIPv4
-func (i *IPv4) LayerType() gopacket.LayerType { return LayerTypeIPv4 }
-func (i *IPv4) NetworkFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointIPv4, i.SrcIP, i.DstIP)
+func (i *IPv4) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv4 }
+func (i *IPv4) NetworkFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointIPv4, i.SrcIP, i.DstIP)
 }
 
 type IPv4Option struct {
@@ -73,8 +73,8 @@ func (i IPv4Option) String() string {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-func (ip *IPv4) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+func (ip *IPv4) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	if len(ip.Options) > 0 {
 		return fmt.Errorf("cannot currently serialize IPv4 options")
 	}
@@ -124,7 +124,7 @@ func (ip *IPv4) flagsfrags() (ff uint16) {
 }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (ip *IPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (ip *IPv4) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	flagsfrags := binary.BigEndian.Uint16(data[6:8])
 
 	ip.Version = uint8(data[0]) >> 4
@@ -198,18 +198,18 @@ func (ip *IPv4) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	return nil
 }
 
-func (i *IPv4) CanDecode() gopacket.LayerClass {
+func (i *IPv4) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeIPv4
 }
 
-func (i *IPv4) NextLayerType() gopacket.LayerType {
+func (i *IPv4) NextLayerType() gopacket_dpdk.LayerType {
 	if i.Flags&IPv4MoreFragments != 0 || i.FragOffset != 0 {
-		return gopacket.LayerTypeFragment
+		return gopacket_dpdk.LayerTypeFragment
 	}
 	return i.Protocol.LayerType()
 }
 
-func decodeIPv4(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv4(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	ip := &IPv4{}
 	err := ip.DecodeFromBytes(data, p)
 	p.AddLayer(ip)

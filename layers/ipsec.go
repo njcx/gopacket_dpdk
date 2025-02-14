@@ -8,7 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // IPSecAH is the authentication header for IPv4/6 defined in
@@ -24,9 +24,9 @@ type IPSecAH struct {
 }
 
 // LayerType returns LayerTypeIPSecAH.
-func (i *IPSecAH) LayerType() gopacket.LayerType { return LayerTypeIPSecAH }
+func (i *IPSecAH) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPSecAH }
 
-func decodeIPSecAH(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPSecAH(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPSecAH{
 		ipv6ExtensionBase: decodeIPv6ExtensionBase(data),
 		Reserved:          binary.BigEndian.Uint16(data[2:4]),
@@ -48,9 +48,9 @@ type IPSecESP struct {
 }
 
 // LayerType returns LayerTypeIPSecESP.
-func (i *IPSecESP) LayerType() gopacket.LayerType { return LayerTypeIPSecESP }
+func (i *IPSecESP) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPSecESP }
 
-func decodeIPSecESP(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPSecESP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPSecESP{
 		BaseLayer: BaseLayer{data, nil},
 		SPI:       binary.BigEndian.Uint32(data[:4]),

@@ -9,7 +9,7 @@ package layers
 
 import (
 	"encoding/binary"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 	"time"
 )
@@ -31,7 +31,7 @@ type IGMP struct {
 }
 
 // LayerType returns LayerTypeIGMP
-func (i *IGMP) LayerType() gopacket.LayerType { return LayerTypeIGMP }
+func (i *IGMP) LayerType() gopacket_dpdk.LayerType { return LayerTypeIGMP }
 
 // igmpTimeDecode decodes the duration created by the given byte, using the
 // algorithm in http://www.rfc-base.org/txt/rfc-3376.txt section 4.1.1.
@@ -45,7 +45,7 @@ func igmpTimeDecode(t uint8) time.Duration {
 }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (i *IGMP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (i *IGMP) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	i.Type = IGMPType(data[0])
 	i.MaxResponseTime = igmpTimeDecode(data[1])
 	i.Checksum = binary.BigEndian.Uint16(data[2:4])
@@ -68,16 +68,16 @@ func (i *IGMP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 }
 
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
-func (i *IGMP) CanDecode() gopacket.LayerClass {
+func (i *IGMP) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeIGMP
 }
 
 // NextLayerType returns the layer type contained by this DecodingLayer.
-func (i *IGMP) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypeZero
+func (i *IGMP) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypeZero
 }
 
-func decodeIGMP(data []byte, p gopacket.PacketBuilder) error {
+func decodeIGMP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IGMP{}
 	return decodingLayerDecoder(i, data, p)
 }

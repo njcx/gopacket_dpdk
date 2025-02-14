@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
+package gopacket_dpdk
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 // they may then use a type assertion to get the actual layer type for deep
 // inspection of the data.
 type Layer interface {
-	// LayerType is the gopacket type for this layer.
+	// LayerType is the gopacket_dpdk type for this layer.
 	LayerType() LayerType
 	// LayerContents returns the set of bytes that make up this layer.
 	LayerContents() []byte
@@ -46,8 +46,8 @@ func (p *Payload) DecodeFromBytes(data []byte, df DecodeFeedback) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
 func (p Payload) SerializeTo(b SerializeBuffer, opts SerializeOptions) error {
 	bytes, err := b.PrependBytes(len(p))
 	if err != nil {
@@ -86,8 +86,8 @@ func (p *Fragment) DecodeFromBytes(data []byte, df DecodeFeedback) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
 func (p *Fragment) SerializeTo(b SerializeBuffer, opts SerializeOptions) error {
 	bytes, err := b.PrependBytes(len(*p))
 	if err != nil {

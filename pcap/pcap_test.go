@@ -12,19 +12,19 @@ import (
 	"log"
 	"testing"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 )
 
 func TestPcapFileRead(t *testing.T) {
 	for _, file := range []struct {
 		filename       string
 		num            int
-		expectedLayers []gopacket.LayerType
+		expectedLayers []gopacket_dpdk.LayerType
 	}{
 		{"test_loopback.pcap",
 			24,
-			[]gopacket.LayerType{
+			[]gopacket_dpdk.LayerType{
 				layers.LayerTypeLoopback,
 				layers.LayerTypeIPv6,
 				layers.LayerTypeTCP,
@@ -32,7 +32,7 @@ func TestPcapFileRead(t *testing.T) {
 		},
 		{"test_ethernet.pcap",
 			16,
-			[]gopacket.LayerType{
+			[]gopacket_dpdk.LayerType{
 				layers.LayerTypeEthernet,
 				layers.LayerTypeIPv4,
 				layers.LayerTypeTCP,
@@ -40,7 +40,7 @@ func TestPcapFileRead(t *testing.T) {
 		},
 		{"test_dns.pcap",
 			10,
-			[]gopacket.LayerType{
+			[]gopacket_dpdk.LayerType{
 				layers.LayerTypeEthernet,
 				layers.LayerTypeIPv4,
 				layers.LayerTypeUDP,
@@ -50,11 +50,11 @@ func TestPcapFileRead(t *testing.T) {
 	} {
 		t.Logf("\n\n\n\nProcessing file %s\n\n\n\n", file.filename)
 
-		packets := []gopacket.Packet{}
+		packets := []gopacket_dpdk.Packet{}
 		if handle, err := OpenOffline(file.filename); err != nil {
 			t.Fatal(err)
 		} else {
-			packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+			packetSource := gopacket_dpdk.NewPacketSource(handle, handle.LinkType())
 			for packet := range packetSource.Packets() {
 				packets = append(packets, packet)
 			}

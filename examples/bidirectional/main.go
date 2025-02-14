@@ -5,17 +5,17 @@
 // tree.
 
 // This binary provides an example of connecting up bidirectional streams from
-// the unidirectional streams provided by gopacket/tcpassembly.
+// the unidirectional streams provided by gopacket_dpdk/tcpassembly.
 package main
 
 import (
 	"flag"
 	"fmt"
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/examples/util"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
-	"github.com/njcx/gopacket/tcpassembly"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/examples/util"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
+	"github.com/njcx/gopacket_dpdk/tcpassembly"
 	"log"
 	"time"
 )
@@ -27,7 +27,7 @@ var logAllPackets = flag.Bool("v", false, "Logs every packet in great detail")
 
 // key is used to map bidirectional streams to each other.
 type key struct {
-	net, transport gopacket.Flow
+	net, transport gopacket_dpdk.Flow
 }
 
 // String prints out the key in a human-readable fashion.
@@ -64,7 +64,7 @@ type myFactory struct {
 }
 
 // New handles creating a new tcpassembly.Stream.
-func (f *myFactory) New(netFlow, tcpFlow gopacket.Flow) tcpassembly.Stream {
+func (f *myFactory) New(netFlow, tcpFlow gopacket_dpdk.Flow) tcpassembly.Stream {
 	// Create a new stream.
 	s := &myStream{}
 
@@ -166,7 +166,7 @@ func main() {
 
 	log.Println("reading in packets")
 	// Read in packets, pass to assembler.
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	packetSource := gopacket_dpdk.NewPacketSource(handle, handle.LinkType())
 	packets := packetSource.Packets()
 	ticker := time.Tick(timeout / 4)
 	for {

@@ -12,8 +12,8 @@ package dumpcommand
 import (
 	"flag"
 	"fmt"
-	"github.com/njcx/gopacket"
-	_ "github.com/njcx/gopacket/layers" // pulls in all layers decoders
+	"github.com/njcx/gopacket_dpdk"
+	_ "github.com/njcx/gopacket_dpdk/layers" // pulls in all layers decoders
 	"log"
 	"os"
 	"time"
@@ -27,16 +27,16 @@ var statsevery = flag.Int("stats", 1000, "Output statistics every N packets")
 var printErrors = flag.Bool("errors", false, "Print out packet dumps of decode errors, useful for checking decoders against live traffic")
 var lazy = flag.Bool("lazy", false, "If true, do lazy decoding")
 
-func Run(src gopacket.PacketDataSource) {
+func Run(src gopacket_dpdk.PacketDataSource) {
 	if !flag.Parsed() {
 		log.Fatalln("Run called without flags.Parse() being called")
 	}
-	var dec gopacket.Decoder
+	var dec gopacket_dpdk.Decoder
 	var ok bool
-	if dec, ok = gopacket.DecodersByLayerName[*decoder]; !ok {
+	if dec, ok = gopacket_dpdk.DecodersByLayerName[*decoder]; !ok {
 		log.Fatalln("No decoder named", *decoder)
 	}
-	source := gopacket.NewPacketSource(src, dec)
+	source := gopacket_dpdk.NewPacketSource(src, dec)
 	source.Lazy = *lazy
 	source.NoCopy = true
 	fmt.Fprintln(os.Stderr, "Starting to read packets")
@@ -45,7 +45,7 @@ func Run(src gopacket.PacketDataSource) {
 	start := time.Now()
 	errors := 0
 	truncated := 0
-	layertypes := map[gopacket.LayerType]int{}
+	layertypes := map[gopacket_dpdk.LayerType]int{}
 	for packet := range source.Packets() {
 		count++
 		bytes += int64(len(packet.Data()))

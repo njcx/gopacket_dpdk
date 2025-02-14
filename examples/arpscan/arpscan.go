@@ -5,7 +5,7 @@
 // tree.
 
 // arpscan implements ARP scanning of all interfaces' local networks using
-// gopacket and its subpackages.  This example shows, among other things:
+// gopacket_dpdk and its subpackages.  This example shows, among other things:
 //   - Generating and sending packet data
 //   - Reading in packet data and interpreting it
 //   - Use of the 'pcap' subpackage for reading/writing
@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
 )
 
 func main() {
@@ -109,10 +109,10 @@ func scan(iface *net.Interface) error {
 //
 // readARP loops until 'stop' is closed.
 func readARP(handle *pcap.Handle, iface *net.Interface, stop chan struct{}) {
-	src := gopacket.NewPacketSource(handle, layers.LayerTypeEthernet)
+	src := gopacket_dpdk.NewPacketSource(handle, layers.LayerTypeEthernet)
 	in := src.Packets()
 	for {
-		var packet gopacket.Packet
+		var packet gopacket_dpdk.Packet
 		select {
 		case <-stop:
 			return
@@ -154,15 +154,15 @@ func writeARP(handle *pcap.Handle, iface *net.Interface, addr *net.IPNet) error 
 		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
 	}
 	// Set up buffer and options for serialization.
-	buf := gopacket.NewSerializeBuffer()
-	opts := gopacket.SerializeOptions{
+	buf := gopacket_dpdk.NewSerializeBuffer()
+	opts := gopacket_dpdk.SerializeOptions{
 		FixLengths:       true,
 		ComputeChecksums: true,
 	}
 	// Send one packet for every address.
 	for _, ip := range ips(addr) {
 		arp.DstProtAddress = []byte(ip)
-		gopacket.SerializeLayers(buf, opts, &eth, &arp)
+		gopacket_dpdk.SerializeLayers(buf, opts, &eth, &arp)
 		if err := handle.WritePacketData(buf.Bytes()); err != nil {
 			return err
 		}

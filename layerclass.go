@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
+package gopacket_dpdk
 
 // LayerClass is a set of LayerTypes, used for grabbing one of a number of
 // different types from a packet.

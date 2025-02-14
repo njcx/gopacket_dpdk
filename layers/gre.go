@@ -8,7 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // GRE is a Generic Routing Encapsulation header.
@@ -30,11 +30,11 @@ type GRERouting struct {
 	RoutingInformation   []byte
 }
 
-// LayerType returns gopacket.LayerTypeGRE.
-func (g *GRE) LayerType() gopacket.LayerType { return LayerTypeGRE }
+// LayerType returns gopacket_dpdk.LayerTypeGRE.
+func (g *GRE) LayerType() gopacket_dpdk.LayerType { return LayerTypeGRE }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (g *GRE) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (g *GRE) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	g.ChecksumPresent = data[0]&0x80 != 0
 	g.RoutingPresent = data[0]&0x40 != 0
 	g.KeyPresent = data[0]&0x20 != 0
@@ -68,16 +68,16 @@ func (g *GRE) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 }
 
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
-func (g *GRE) CanDecode() gopacket.LayerClass {
+func (g *GRE) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeGRE
 }
 
 // NextLayerType returns the layer type contained by this DecodingLayer.
-func (g *GRE) NextLayerType() gopacket.LayerType {
+func (g *GRE) NextLayerType() gopacket_dpdk.LayerType {
 	return g.Protocol.LayerType()
 }
 
-func decodeGRE(data []byte, p gopacket.PacketBuilder) error {
+func decodeGRE(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	g := &GRE{}
 	return decodingLayerDecoder(g, data, p)
 }

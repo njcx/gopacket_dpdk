@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-// Package util provides shared utilities for all gopacket examples.
+// Package util provides shared utilities for all gopacket_dpdk examples.
 package util
 
 import (
@@ -19,10 +19,10 @@ var cpuprofile = flag.String("cpuprofile", "", "Where to write CPU profile")
 // Run starts up stuff at the beginning of a main function, and returns a
 // function to defer until the function completes.  It should be used like this:
 //
-//   func main() {
-//     defer util.Run()()
-//     ... stuff ...
-//   }
+//	func main() {
+//	  defer util.Run()()
+//	  ... stuff ...
+//	}
 func Run() func() {
 	flag.Parse()
 	if *cpuprofile != "" {

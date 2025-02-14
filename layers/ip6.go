@@ -10,7 +10,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 )
 
@@ -32,9 +32,9 @@ type IPv6 struct {
 }
 
 // LayerType returns LayerTypeIPv6
-func (i *IPv6) LayerType() gopacket.LayerType { return LayerTypeIPv6 }
-func (i *IPv6) NetworkFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointIPv6, i.SrcIP, i.DstIP)
+func (i *IPv6) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv6 }
+func (i *IPv6) NetworkFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointIPv6, i.SrcIP, i.DstIP)
 }
 
 const (
@@ -42,9 +42,9 @@ const (
 )
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (ip6 *IPv6) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (ip6 *IPv6) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	payload := b.Bytes()
 	if ip6.HopByHop != nil {
 		return fmt.Errorf("unable to serialize hopbyhop for now")
@@ -73,7 +73,7 @@ func (ip6 *IPv6) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.Serialize
 	return nil
 }
 
-func (ip6 *IPv6) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (ip6 *IPv6) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	ip6.Version = uint8(data[0]) >> 4
 	ip6.TrafficClass = uint8((binary.BigEndian.Uint16(data[0:2]) >> 4) & 0x00FF)
 	ip6.FlowLabel = binary.BigEndian.Uint32(data[0:4]) & 0x000FFFFF
@@ -128,17 +128,17 @@ func (ip6 *IPv6) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 	return nil
 }
 
-func (i *IPv6) CanDecode() gopacket.LayerClass {
+func (i *IPv6) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeIPv6
 }
-func (i *IPv6) NextLayerType() gopacket.LayerType {
+func (i *IPv6) NextLayerType() gopacket_dpdk.LayerType {
 	if i.HopByHop != nil {
 		return i.HopByHop.NextHeader.LayerType()
 	}
 	return i.NextHeader.LayerType()
 }
 
-func decodeIPv6(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv6(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	ip6 := &IPv6{}
 	err := ip6.DecodeFromBytes(data, p)
 	p.AddLayer(ip6)
@@ -158,7 +158,7 @@ func decodeIPv6(data []byte, p gopacket.PacketBuilder) error {
 	return p.NextDecoder(ip6.NextHeader)
 }
 
-func (i *IPv6HopByHop) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (i *IPv6HopByHop) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	i.ipv6ExtensionBase = decodeIPv6ExtensionBase(data)
 	i.Options = i.opts[:0]
 	var opt *IPv6HopByHopOption
@@ -169,7 +169,7 @@ func (i *IPv6HopByHop) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) 
 	return nil
 }
 
-func decodeIPv6HopByHop(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv6HopByHop(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPv6HopByHop{}
 	err := i.DecodeFromBytes(data, p)
 	p.AddLayer(i)
@@ -197,7 +197,7 @@ func decodeIPv6HeaderTLVOption(data []byte) (h ipv6HeaderTLVOption) {
 	return
 }
 
-func (h *ipv6HeaderTLVOption) serializeTo(b gopacket.SerializeBuffer, fixLengths bool) (int, error) {
+func (h *ipv6HeaderTLVOption) serializeTo(b gopacket_dpdk.SerializeBuffer, fixLengths bool) (int, error) {
 	if fixLengths {
 		h.OptionLength = uint8(len(h.OptionData))
 	}
@@ -239,16 +239,16 @@ type IPv6ExtensionSkipper struct {
 	BaseLayer
 }
 
-func (i *IPv6ExtensionSkipper) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (i *IPv6ExtensionSkipper) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	extension := decodeIPv6ExtensionBase(data)
 	i.BaseLayer = BaseLayer{data[:extension.ActualLength], data[extension.ActualLength:]}
 	i.NextHeader = extension.NextHeader
 	return nil
 }
-func (i *IPv6ExtensionSkipper) CanDecode() gopacket.LayerClass {
+func (i *IPv6ExtensionSkipper) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerClassIPv6Extension
 }
-func (i *IPv6ExtensionSkipper) NextLayerType() gopacket.LayerType {
+func (i *IPv6ExtensionSkipper) NextLayerType() gopacket_dpdk.LayerType {
 	return i.NextHeader.LayerType()
 }
 
@@ -260,7 +260,7 @@ type IPv6HopByHop struct {
 }
 
 // LayerType returns LayerTypeIPv6HopByHop.
-func (i *IPv6HopByHop) LayerType() gopacket.LayerType { return LayerTypeIPv6HopByHop }
+func (i *IPv6HopByHop) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv6HopByHop }
 
 // IPv6Routing is the IPv6 routing extension.
 type IPv6Routing struct {
@@ -276,9 +276,9 @@ type IPv6Routing struct {
 }
 
 // LayerType returns LayerTypeIPv6Routing.
-func (i *IPv6Routing) LayerType() gopacket.LayerType { return LayerTypeIPv6Routing }
+func (i *IPv6Routing) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv6Routing }
 
-func decodeIPv6Routing(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv6Routing(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPv6Routing{
 		ipv6ExtensionBase: decodeIPv6ExtensionBase(data),
 		RoutingType:       data[2],
@@ -313,9 +313,9 @@ type IPv6Fragment struct {
 }
 
 // LayerType returns LayerTypeIPv6Fragment.
-func (i *IPv6Fragment) LayerType() gopacket.LayerType { return LayerTypeIPv6Fragment }
+func (i *IPv6Fragment) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv6Fragment }
 
-func decodeIPv6Fragment(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv6Fragment(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPv6Fragment{
 		BaseLayer:      BaseLayer{data[:8], data[8:]},
 		NextHeader:     IPProtocol(data[0]),
@@ -326,13 +326,13 @@ func decodeIPv6Fragment(data []byte, p gopacket.PacketBuilder) error {
 		Identification: binary.BigEndian.Uint32(data[4:8]),
 	}
 	p.AddLayer(i)
-	return p.NextDecoder(gopacket.DecodeFragment)
+	return p.NextDecoder(gopacket_dpdk.DecodeFragment)
 }
 
 // IPv6DestinationOption is a TLV option present in an IPv6 destination options extension.
 type IPv6DestinationOption ipv6HeaderTLVOption
 
-func (o *IPv6DestinationOption) serializeTo(b gopacket.SerializeBuffer, fixLengths bool) (int, error) {
+func (o *IPv6DestinationOption) serializeTo(b gopacket_dpdk.SerializeBuffer, fixLengths bool) (int, error) {
 	return (*ipv6HeaderTLVOption)(o).serializeTo(b, fixLengths)
 }
 
@@ -343,9 +343,9 @@ type IPv6Destination struct {
 }
 
 // LayerType returns LayerTypeIPv6Destination.
-func (i *IPv6Destination) LayerType() gopacket.LayerType { return LayerTypeIPv6Destination }
+func (i *IPv6Destination) LayerType() gopacket_dpdk.LayerType { return LayerTypeIPv6Destination }
 
-func decodeIPv6Destination(data []byte, p gopacket.PacketBuilder) error {
+func decodeIPv6Destination(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &IPv6Destination{
 		ipv6ExtensionBase: decodeIPv6ExtensionBase(data),
 		// We guess we'll 1-2 options, one regular option at least, then maybe one
@@ -362,9 +362,9 @@ func decodeIPv6Destination(data []byte, p gopacket.PacketBuilder) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (i *IPv6Destination) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (i *IPv6Destination) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	optionLength := 0
 	for _, opt := range i.Options {
 		l, err := opt.serializeTo(b, opts.FixLengths)

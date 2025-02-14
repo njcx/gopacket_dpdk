@@ -9,7 +9,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 type EAPCode uint8
@@ -43,10 +43,10 @@ type EAP struct {
 }
 
 // LayerType returns LayerTypeEAP.
-func (e *EAP) LayerType() gopacket.LayerType { return LayerTypeEAP }
+func (e *EAP) LayerType() gopacket_dpdk.LayerType { return LayerTypeEAP }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (e *EAP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (e *EAP) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	e.Code = EAPCode(data[0])
 	e.Id = data[1]
 	e.Length = binary.BigEndian.Uint16(data[2:4])
@@ -66,9 +66,9 @@ func (e *EAP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (e *EAP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (e *EAP) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	if opts.FixLengths {
 		e.Length = uint16(len(e.TypeData) + 1)
 	}
@@ -91,16 +91,16 @@ func (e *EAP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOpt
 }
 
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
-func (e *EAP) CanDecode() gopacket.LayerClass {
+func (e *EAP) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeEAP
 }
 
 // NextLayerType returns the layer type contained by this DecodingLayer.
-func (e *EAP) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypeZero
+func (e *EAP) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypeZero
 }
 
-func decodeEAP(data []byte, p gopacket.PacketBuilder) error {
+func decodeEAP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	e := &EAP{}
 	return decodingLayerDecoder(e, data, p)
 }

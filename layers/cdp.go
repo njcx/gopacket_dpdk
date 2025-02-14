@@ -14,7 +14,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 )
 
@@ -202,12 +202,12 @@ type CiscoDiscoveryInfo struct {
 	Unknown          []CiscoDiscoveryValue
 }
 
-// LayerType returns gopacket.LayerTypeCiscoDiscovery.
-func (c *CiscoDiscovery) LayerType() gopacket.LayerType {
+// LayerType returns gopacket_dpdk.LayerTypeCiscoDiscovery.
+func (c *CiscoDiscovery) LayerType() gopacket_dpdk.LayerType {
 	return LayerTypeCiscoDiscovery
 }
 
-func decodeCiscoDiscovery(data []byte, p gopacket.PacketBuilder) error {
+func decodeCiscoDiscovery(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	c := &CiscoDiscovery{
 		Version:  data[0],
 		TTL:      data[1],
@@ -224,11 +224,11 @@ func decodeCiscoDiscovery(data []byte, p gopacket.PacketBuilder) error {
 	c.Contents = data[0:4]
 	c.Payload = data[4:]
 	p.AddLayer(c)
-	return p.NextDecoder(gopacket.DecodeFunc(decodeCiscoDiscoveryInfo))
+	return p.NextDecoder(gopacket_dpdk.DecodeFunc(decodeCiscoDiscoveryInfo))
 }
 
-// LayerType returns gopacket.LayerTypeCiscoDiscoveryInfo.
-func (c *CiscoDiscoveryInfo) LayerType() gopacket.LayerType {
+// LayerType returns gopacket_dpdk.LayerTypeCiscoDiscoveryInfo.
+func (c *CiscoDiscoveryInfo) LayerType() gopacket_dpdk.LayerType {
 	return LayerTypeCiscoDiscoveryInfo
 }
 
@@ -249,7 +249,7 @@ func decodeCiscoDiscoveryTLVs(data []byte) (values []CiscoDiscoveryValue, err er
 	return
 }
 
-func decodeCiscoDiscoveryInfo(data []byte, p gopacket.PacketBuilder) error {
+func decodeCiscoDiscoveryInfo(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	var err error
 	info := &CiscoDiscoveryInfo{BaseLayer: BaseLayer{Contents: data}}
 	p.AddLayer(info)

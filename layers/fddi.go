@@ -7,7 +7,7 @@
 package layers
 
 import (
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 )
 
@@ -20,14 +20,14 @@ type FDDI struct {
 }
 
 // LayerType returns LayerTypeFDDI.
-func (f *FDDI) LayerType() gopacket.LayerType { return LayerTypeFDDI }
+func (f *FDDI) LayerType() gopacket_dpdk.LayerType { return LayerTypeFDDI }
 
 // LinkFlow returns a new flow of type EndpointMAC.
-func (f *FDDI) LinkFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointMAC, f.SrcMAC, f.DstMAC)
+func (f *FDDI) LinkFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointMAC, f.SrcMAC, f.DstMAC)
 }
 
-func decodeFDDI(data []byte, p gopacket.PacketBuilder) error {
+func decodeFDDI(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	f := &FDDI{
 		FrameControl: FDDIFrameControl(data[0] & 0xF8),
 		Priority:     data[0] & 0x07,

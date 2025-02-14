@@ -10,7 +10,7 @@ package layers
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"strconv"
 )
 
@@ -101,10 +101,10 @@ type ICMPv6 struct {
 }
 
 // LayerType returns LayerTypeICMPv6.
-func (i *ICMPv6) LayerType() gopacket.LayerType { return LayerTypeICMPv6 }
+func (i *ICMPv6) LayerType() gopacket_dpdk.LayerType { return LayerTypeICMPv6 }
 
 // DecodeFromBytes decodes the given bytes into this layer.
-func (i *ICMPv6) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (i *ICMPv6) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	i.TypeCode = ICMPv6TypeCode(binary.BigEndian.Uint16(data[:2]))
 	i.Checksum = binary.BigEndian.Uint16(data[2:4])
 	i.TypeBytes = data[4:8]
@@ -113,9 +113,9 @@ func (i *ICMPv6) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error 
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (i *ICMPv6) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (i *ICMPv6) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	if i.TypeBytes == nil {
 		i.TypeBytes = lotsOfZeros[:4]
 	} else if len(i.TypeBytes) != 4 {
@@ -141,16 +141,16 @@ func (i *ICMPv6) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.Serialize
 }
 
 // CanDecode returns the set of layer types that this DecodingLayer can decode.
-func (i *ICMPv6) CanDecode() gopacket.LayerClass {
+func (i *ICMPv6) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeICMPv6
 }
 
 // NextLayerType returns the layer type contained by this DecodingLayer.
-func (i *ICMPv6) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypePayload
+func (i *ICMPv6) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypePayload
 }
 
-func decodeICMPv6(data []byte, p gopacket.PacketBuilder) error {
+func decodeICMPv6(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	i := &ICMPv6{}
 	return decodingLayerDecoder(i, data, p)
 }

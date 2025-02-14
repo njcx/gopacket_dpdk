@@ -8,16 +8,16 @@
 Package layers provides decoding layers for many common protocols.
 
 The layers package contains decode implementations for a number of different
-types of packet layers.  Users of gopacket will almost always want to also use
+types of packet layers.  Users of gopacket_dpdk will almost always want to also use
 layers to actually decode packet data into useful pieces. To see the set of
-protocols that gopacket/layers is currently able to decode,
+protocols that gopacket_dpdk/layers is currently able to decode,
 look at the set of LayerTypes defined in the Variables sections. The
 layers package also defines endpoints for many of the common packet layers
 that have source/destination addresses associated with them, for example IPv4/6
 (IPs) and TCP/UDP (ports).
 Finally, layers contains a number of useful enumerations (IPProtocol,
 EthernetType, LinkType, PPPType, etc...).  Many of these implement the
-gopacket.Decoder interface, so they can be passed into gopacket as decoders.
+gopacket_dpdk.Decoder interface, so they can be passed into gopacket_dpdk as decoders.
 
 Most common protocol layers are named using acronyms or other industry-common
 names (IPv4, TCP, PPP).  Some of the less common ones have their names expanded
@@ -29,7 +29,7 @@ ApplicationLayer, while base SCTP implements TransportLayer), or possibly
 because splitting a protocol into a few layers makes decoding easier.
 
 This package is meant to be used with its parent,
-http://github.com/njcx/gopacket.
+http://github.com/njcx/gopacket_dpdk.
 
 # Port Types
 
@@ -52,10 +52,10 @@ users depending on their preferences.  For example, if you have a spiffy new
 IPv4 decoder that works way better than the one built into layers, you can do
 this:
 
-	var mySpiffyIPv4Decoder gopacket.Decoder = ...
+	var mySpiffyIPv4Decoder gopacket_dpdk.Decoder = ...
 	layers.EthernetTypeMetadata[EthernetTypeIPv4].DecodeWith = mySpiffyIPv4Decoder
 
 This will make all future ethernet packets use your new decoder to decode IPv4
-packets, instead of the built-in decoder used by gopacket.
+packets, instead of the built-in decoder used by gopacket_dpdk.
 */
 package layers

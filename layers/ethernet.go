@@ -11,7 +11,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 )
 
@@ -32,13 +32,13 @@ type Ethernet struct {
 }
 
 // LayerType returns LayerTypeEthernet
-func (e *Ethernet) LayerType() gopacket.LayerType { return LayerTypeEthernet }
+func (e *Ethernet) LayerType() gopacket_dpdk.LayerType { return LayerTypeEthernet }
 
-func (e *Ethernet) LinkFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointMAC, e.SrcMAC, e.DstMAC)
+func (e *Ethernet) LinkFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointMAC, e.SrcMAC, e.DstMAC)
 }
 
-func (eth *Ethernet) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (eth *Ethernet) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	if len(data) < 14 {
 		return errors.New("Ethernet packet too small")
 	}
@@ -61,9 +61,9 @@ func (eth *Ethernet) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) er
 }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (eth *Ethernet) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (eth *Ethernet) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	if len(eth.DstMAC) != 6 {
 		return fmt.Errorf("invalid dst MAC: %v", eth.DstMAC)
 	}
@@ -102,15 +102,15 @@ func (eth *Ethernet) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.Seria
 	return nil
 }
 
-func (eth *Ethernet) CanDecode() gopacket.LayerClass {
+func (eth *Ethernet) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeEthernet
 }
 
-func (eth *Ethernet) NextLayerType() gopacket.LayerType {
+func (eth *Ethernet) NextLayerType() gopacket_dpdk.LayerType {
 	return eth.EthernetType.LayerType()
 }
 
-func decodeEthernet(data []byte, p gopacket.PacketBuilder) error {
+func decodeEthernet(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	eth := &Ethernet{}
 	err := eth.DecodeFromBytes(data, p)
 	if err != nil {

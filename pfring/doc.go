@@ -9,10 +9,10 @@
 
 PF_RING is a high-performance packet capture library written by ntop.org (see
 http://www.ntop.org/products/pf_ring/).  This library allows you to utilize the
-PF_RING library with gopacket to read packet data and decode it.
+PF_RING library with gopacket_dpdk to read packet data and decode it.
 
 This package is meant to be used with its parent,
-http://github.com/njcx/gopacket, although it can also be used independently
+http://github.com/njcx/gopacket_dpdk, although it can also be used independently
 if you just want to get packet data from the wire.
 
 # Simple Example
@@ -27,7 +27,7 @@ pfring:
 	 } else if err := ring.Enable(); err != nil { // Must do this!, or you get no packets!
 	   panic(err)
 	 } else {
-	   packetSource := gopacket.NewPacketSource(ring, layers.LinkTypeEthernet)
+	   packetSource := gopacket_dpdk.NewPacketSource(ring, layers.LinkTypeEthernet)
 		 for packet := range packetSource.Packets() {
 	     handlePacket(packet)  // Do something with a packet here.
 	   }

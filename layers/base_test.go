@@ -9,7 +9,7 @@
 package layers
 
 import (
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func min(a, b int) int {
 	return b
 }
 
-func checkLayers(p gopacket.Packet, want []gopacket.LayerType, t *testing.T) {
+func checkLayers(p gopacket_dpdk.Packet, want []gopacket_dpdk.LayerType, t *testing.T) {
 	layers := p.Layers()
 	t.Log("Checking packet layers, want", want)
 	for _, l := range layers {

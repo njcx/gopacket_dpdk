@@ -11,7 +11,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 )
 
 // TCP is the layer for TCP headers.
@@ -52,13 +52,13 @@ func (t TCPOption) String() string {
 	return fmt.Sprintf("TCPOption(%v:%v)", t.OptionType, t.OptionData)
 }
 
-// LayerType returns gopacket.LayerTypeTCP
-func (t *TCP) LayerType() gopacket.LayerType { return LayerTypeTCP }
+// LayerType returns gopacket_dpdk.LayerTypeTCP
+func (t *TCP) LayerType() gopacket_dpdk.LayerType { return LayerTypeTCP }
 
 // SerializeTo writes the serialized form of this layer into the
-// SerializationBuffer, implementing gopacket.SerializableLayer.
-// See the docs for gopacket.SerializableLayer for more info.
-func (t *TCP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+// SerializationBuffer, implementing gopacket_dpdk.SerializableLayer.
+// See the docs for gopacket_dpdk.SerializableLayer for more info.
+func (t *TCP) SerializeTo(b gopacket_dpdk.SerializeBuffer, opts gopacket_dpdk.SerializeOptions) error {
 	var optionLength int
 	for _, o := range t.Options {
 		switch o.OptionType {
@@ -145,7 +145,7 @@ func (t *TCP) flagsAndOffset() uint16 {
 	return f
 }
 
-func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	tcp.SrcPort = TCPPort(binary.BigEndian.Uint16(data[0:2]))
 	tcp.sPort = data[0:2]
 	tcp.DstPort = TCPPort(binary.BigEndian.Uint16(data[2:4]))
@@ -208,15 +208,15 @@ func (tcp *TCP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	return nil
 }
 
-func (t *TCP) CanDecode() gopacket.LayerClass {
+func (t *TCP) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeTCP
 }
 
-func (t *TCP) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypePayload
+func (t *TCP) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypePayload
 }
 
-func decodeTCP(data []byte, p gopacket.PacketBuilder) error {
+func decodeTCP(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	tcp := &TCP{}
 	err := tcp.DecodeFromBytes(data, p)
 	p.AddLayer(tcp)
@@ -224,9 +224,9 @@ func decodeTCP(data []byte, p gopacket.PacketBuilder) error {
 	if err != nil {
 		return err
 	}
-	return p.NextDecoder(gopacket.LayerTypePayload)
+	return p.NextDecoder(gopacket_dpdk.LayerTypePayload)
 }
 
-func (t *TCP) TransportFlow() gopacket.Flow {
-	return gopacket.NewFlow(EndpointTCPPort, t.sPort, t.dPort)
+func (t *TCP) TransportFlow() gopacket_dpdk.Flow {
+	return gopacket_dpdk.NewFlow(EndpointTCPPort, t.sPort, t.dPort)
 }

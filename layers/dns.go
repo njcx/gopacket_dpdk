@@ -10,7 +10,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/njcx/gopacket"
+	"github.com/njcx/gopacket_dpdk"
 	"net"
 )
 
@@ -183,12 +183,12 @@ type DNS struct {
 	buffer []byte
 }
 
-// LayerType returns gopacket.LayerTypeDNS.
-func (d *DNS) LayerType() gopacket.LayerType { return LayerTypeDNS }
+// LayerType returns gopacket_dpdk.LayerTypeDNS.
+func (d *DNS) LayerType() gopacket_dpdk.LayerType { return LayerTypeDNS }
 
 // decodeDNS decodes the byte slice into a DNS type. It also
 // setups the application Layer in PacketBuilder.
-func decodeDNS(data []byte, p gopacket.PacketBuilder) error {
+func decodeDNS(data []byte, p gopacket_dpdk.PacketBuilder) error {
 	d := &DNS{}
 	err := d.DecodeFromBytes(data, p)
 	if err != nil {
@@ -200,7 +200,7 @@ func decodeDNS(data []byte, p gopacket.PacketBuilder) error {
 }
 
 // DecodeFromBytes decodes the slice into the DNS struct.
-func (d *DNS) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
+func (d *DNS) DecodeFromBytes(data []byte, df gopacket_dpdk.DecodeFeedback) error {
 	d.buffer = d.buffer[:0]
 
 	if len(data) < 12 {
@@ -282,12 +282,12 @@ func (d *DNS) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {
 	return nil
 }
 
-func (d *DNS) CanDecode() gopacket.LayerClass {
+func (d *DNS) CanDecode() gopacket_dpdk.LayerClass {
 	return LayerTypeDNS
 }
 
-func (d *DNS) NextLayerType() gopacket.LayerType {
-	return gopacket.LayerTypePayload
+func (d *DNS) NextLayerType() gopacket_dpdk.LayerType {
+	return gopacket_dpdk.LayerTypePayload
 }
 
 func (d *DNS) Payload() []byte {
@@ -379,7 +379,7 @@ type DNSQuestion struct {
 	Class DNSClass
 }
 
-func (q *DNSQuestion) decode(data []byte, offset int, df gopacket.DecodeFeedback, buffer *[]byte) (int, error) {
+func (q *DNSQuestion) decode(data []byte, offset int, df gopacket_dpdk.DecodeFeedback, buffer *[]byte) (int, error) {
 	name, endq, err := decodeName(data, offset, buffer, 1)
 	if err != nil {
 		return 0, err
@@ -433,7 +433,7 @@ type DNSResourceRecord struct {
 }
 
 // decode decodes the resource record, returning the total length of the record.
-func (rr *DNSResourceRecord) decode(data []byte, offset int, df gopacket.DecodeFeedback, buffer *[]byte) (int, error) {
+func (rr *DNSResourceRecord) decode(data []byte, offset int, df gopacket_dpdk.DecodeFeedback, buffer *[]byte) (int, error) {
 	name, endq, err := decodeName(data, offset, buffer, 1)
 	if err != nil {
 		return 0, err

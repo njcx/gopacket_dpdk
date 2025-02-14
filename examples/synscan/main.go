@@ -10,8 +10,8 @@
 //
 // Since this is just an example program, it aims for simplicity over
 // performance.  It doesn't handle sending packets very quickly, it scans IPs
-// serially instead of in parallel, and uses gopacket.Packet instead of
-// gopacket.DecodingLayerParser for packet processing.  We also make use of very
+// serially instead of in parallel, and uses gopacket_dpdk.Packet instead of
+// gopacket_dpdk.DecodingLayerParser for packet processing.  We also make use of very
 // simple timeout logic with time.Since.
 //
 // Making it blazingly fast is left as an exercise to the reader.
@@ -25,11 +25,11 @@ import (
 	"net"
 	"time"
 
-	"github.com/njcx/gopacket"
-	"github.com/njcx/gopacket/examples/util"
-	"github.com/njcx/gopacket/layers"
-	"github.com/njcx/gopacket/pcap"
-	"github.com/njcx/gopacket/routing"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/examples/util"
+	"github.com/njcx/gopacket_dpdk/layers"
+	"github.com/njcx/gopacket_dpdk/pcap"
+	"github.com/njcx/gopacket_dpdk/routing"
 )
 
 // scanner handles scanning a single IP address.
@@ -43,8 +43,8 @@ type scanner struct {
 
 	// opts and buf allow us to easily serialize packets in the send()
 	// method.
-	opts gopacket.SerializeOptions
-	buf  gopacket.SerializeBuffer
+	opts gopacket_dpdk.SerializeOptions
+	buf  gopacket_dpdk.SerializeBuffer
 }
 
 // newScanner creates a new scanner for a given destination IP address, using
@@ -52,11 +52,11 @@ type scanner struct {
 func newScanner(ip net.IP, router routing.Router) (*scanner, error) {
 	s := &scanner{
 		dst: ip,
-		opts: gopacket.SerializeOptions{
+		opts: gopacket_dpdk.SerializeOptions{
 			FixLengths:       true,
 			ComputeChecksums: true,
 		},
-		buf: gopacket.NewSerializeBuffer(),
+		buf: gopacket_dpdk.NewSerializeBuffer(),
 	}
 	// Figure out the route to the IP.
 	iface, gw, src, err := router.Route(ip)
@@ -127,7 +127,7 @@ func (s *scanner) getHwAddr() (net.HardwareAddr, error) {
 		} else if err != nil {
 			return nil, err
 		}
-		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+		packet := gopacket_dpdk.NewPacket(data, layers.LayerTypeEthernet, gopacket_dpdk.NoCopy)
 		if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
 			arp := arpLayer.(*layers.ARP)
 			if bytes.Equal(arp.SourceProtAddress, arpDst) {
@@ -166,7 +166,7 @@ func (s *scanner) scan() error {
 
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
-	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
+	ipFlow := gopacket_dpdk.NewFlow(layers.EndpointIPv4, s.dst, s.src)
 	start := time.Now()
 	for {
 		// Send one packet per loop iteration until we've sent packets
@@ -195,7 +195,7 @@ func (s *scanner) scan() error {
 
 		// Parse the packet.  We'd use DecodingLayerParser here if we
 		// wanted to be really fast.
-		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+		packet := gopacket_dpdk.NewPacket(data, layers.LayerTypeEthernet, gopacket_dpdk.NoCopy)
 
 		// Find the packets we care about, and print out logging
 		// information about them.  All others are ignored.
@@ -222,8 +222,8 @@ func (s *scanner) scan() error {
 }
 
 // send sends the given layers as a single packet on the network.
-func (s *scanner) send(l ...gopacket.SerializableLayer) error {
-	if err := gopacket.SerializeLayers(s.buf, s.opts, l...); err != nil {
+func (s *scanner) send(l ...gopacket_dpdk.SerializableLayer) error {
+	if err := gopacket_dpdk.SerializeLayers(s.buf, s.opts, l...); err != nil {
 		return err
 	}
 	return s.handle.WritePacketData(s.buf.Bytes())

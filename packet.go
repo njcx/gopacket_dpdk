@@ -4,7 +4,7 @@
 // that can be found in the LICENSE file in the root of the source
 // tree.
 
-package gopacket
+package gopacket_dpdk
 
 import (
 	"bytes"
@@ -41,7 +41,7 @@ type PacketMetadata struct {
 	Truncated bool
 }
 
-// Packet is the primary object used by gopacket.  Packets are created by a
+// Packet is the primary object used by gopacket_dpdk.  Packets are created by a
 // Decoder's Decode call.  A packet is made up of a set of Data, which
 // is broken into a number of Layers as it is decoded.
 type Packet interface {
@@ -194,9 +194,10 @@ func (p *packet) recoverDecodeError() {
 // in a single line, with no trailing newline.  This function is specifically
 // designed to do the right thing for most layers... it follows the following
 // rules:
-//  * If the Layer has a String function, just output that.
-//  * Otherwise, output all exported fields in the layer, recursing into
-//    exported slices and structs.
+//   - If the Layer has a String function, just output that.
+//   - Otherwise, output all exported fields in the layer, recursing into
+//     exported slices and structs.
+//
 // NOTE:  This is NOT THE SAME AS fmt's "%#v".  %#v will output both exported
 // and unexported fields... many times packet layers contain unexported stuff
 // that would just mess up the output of the layer, see for example the
@@ -236,11 +237,12 @@ func LayerDump(l Layer) string {
 // LayerString for more details.
 //
 // Params:
-//   i - value to write out
-//   anonymous:  if we're currently recursing an anonymous member of a struct
-//   writeSpace:  if we've already written a value in a struct, and need to
-//     write a space before writing more.  This happens when we write various
-//     anonymous values, and need to keep writing more.
+//
+//	i - value to write out
+//	anonymous:  if we're currently recursing an anonymous member of a struct
+//	writeSpace:  if we've already written a value in a struct, and need to
+//	  write a space before writing more.  This happens when we write various
+//	  anonymous values, and need to keep writing more.
 func layerString(i interface{}, anonymous bool, writeSpace bool) string {
 	// Let String() functions take precedence.
 	if s, ok := i.(fmt.Stringer); ok {
@@ -507,7 +509,7 @@ func (p *lazyPacket) LayerClass(lc LayerClass) Layer {
 func (p *lazyPacket) String() string { p.Layers(); return p.packetString() }
 func (p *lazyPacket) Dump() string   { p.Layers(); return p.packetDump() }
 
-// DecodeOptions tells gopacket how to decode a packet.
+// DecodeOptions tells gopacket_dpdk how to decode a packet.
 type DecodeOptions struct {
 	// Lazy decoding decodes the minimum number of layers needed to return data
 	// for a packet at each function call.  Be careful using this with concurrent
@@ -582,8 +584,8 @@ func NewPacket(data []byte, firstLayerDecoder Decoder, options DecodeOptions) Pa
 
 // PacketDataSource is an interface for some source of packet data.  Users may
 // create their own implementations, or use the existing implementations in
-// gopacket/pcap (libpcap, allows reading from live interfaces or from
-// pcap files) or gopacket/pfring (PF_RING, allows reading from live
+// gopacket_dpdk/pcap (libpcap, allows reading from live interfaces or from
+// pcap files) or gopacket_dpdk/pfring (PF_RING, allows reading from live
 // interfaces).
 type PacketDataSource interface {
 	// ReadPacketData returns the next packet available from this data source.
@@ -620,18 +622,19 @@ type ZeroCopyPacketDataSource interface {
 // There are currently two different methods for reading packets in through
 // a PacketSource:
 //
-// Reading With Packets Function
+// # Reading With Packets Function
 //
 // This method is the most convenient and easiest to code, but lacks
 // flexibility.  Packets returns a 'chan Packet', then asynchronously writes
 // packets into that channel.  Packets uses a blocking channel, and closes
 // it if an io.EOF is returned by the underlying PacketDataSource.  All other
 // PacketDataSource errors are ignored and discarded.
-//  for packet := range packetSource.Packets() {
-//    ...
-//  }
 //
-// Reading With NextPacket Function
+//	for packet := range packetSource.Packets() {
+//	  ...
+//	}
+//
+// # Reading With NextPacket Function
 //
 // This method is the most flexible, and exposes errors that may be
 // encountered by the underlying PacketDataSource.  It's also the fastest
@@ -639,16 +642,17 @@ type ZeroCopyPacketDataSource interface {
 // read/write.  However, it requires the user to handle errors, most
 // importantly the io.EOF error in cases where packets are being read from
 // a file.
-//  for {
-//    packet, err := packetSource.NextPacket() {
-//    if err == io.EOF {
-//      break
-//    } else if err != nil {
-//      log.Println("Error:", err)
-//      continue
-//    }
-//    handlePacket(packet)  // Do something with each packet.
-//  }
+//
+//	for {
+//	  packet, err := packetSource.NextPacket() {
+//	  if err == io.EOF {
+//	    break
+//	  } else if err != nil {
+//	    log.Println("Error:", err)
+//	    continue
+//	  }
+//	  handlePacket(packet)  // Do something with each packet.
+//	}
 type PacketSource struct {
 	source  PacketDataSource
 	decoder Decoder
@@ -702,9 +706,9 @@ func (p *PacketSource) packetsToChannel() {
 // PacketDataSource returns an io.EOF error, the channel will be closed.
 // If any other error is encountered, it is ignored.
 //
-//  for packet := range packetSource.Packets() {
-//    handlePacket(packet)  // Do something with each packet.
-//  }
+//	for packet := range packetSource.Packets() {
+//	  handlePacket(packet)  // Do something with each packet.
+//	}
 //
 // If called more than once, returns the same channel.
 func (p *PacketSource) Packets() chan Packet {
