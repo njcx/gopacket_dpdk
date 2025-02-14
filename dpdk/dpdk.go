@@ -7,6 +7,7 @@ package dpdk
 import "C"
 import (
 	"fmt"
+	"sync"
 	"unsafe"
 )
 
@@ -18,6 +19,10 @@ type DPDKHandle struct {
 	portID      uint16
 	bpfFilter   *C.dpdk_bpf_filter
 	Initialized bool
+	mbufs       []*C.struct_rte_mbuf
+	currentIdx  int
+	nbRx        int
+	mu          sync.Mutex
 }
 
 func InitDPDK() error {
@@ -65,11 +70,12 @@ func (h *DPDKHandle) Close() {
 	if h.Initialized {
 		C.stop_port(C.uint16_t(h.portID))
 		C.cleanup_dpdk()
+		h.Initialized = false
 	}
 
 }
 
-func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
+func (h *DPDKHandle) ReceivePacketsCallBack(callback func([]byte)) {
 	burstSize := C.uint16_t(BURST_SIZE)
 	mbufs := make([]*C.struct_rte_mbuf, BURST_SIZE)
 
@@ -95,6 +101,49 @@ func (h *DPDKHandle) ReceivePackets(callback func([]byte)) {
 			C.free_mbuf(mbuf)
 		}
 	}
+}
+
+func (h *DPDKHandle) ReadPacket() ([]byte, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if h.currentIdx >= h.nbRx {
+		h.nbRx = int(C.receive_packets(C.uint16_t(h.portID),
+			(**C.struct_rte_mbuf)(unsafe.Pointer(&h.mbufs[0])),
+			C.uint16_t(BURST_SIZE)))
+
+		h.currentIdx = 0
+
+		if h.nbRx == 0 {
+			return nil, nil // No packets available
+		}
+	}
+
+	mbuf := h.mbufs[h.currentIdx]
+	data := C.get_mbuf_data(mbuf)
+	length := C.get_mbuf_data_len(mbuf)
+
+	C.free_mbuf(mbuf)
+	h.currentIdx++
+
+	return C.GoBytes(unsafe.Pointer(data), C.int(length)), nil
+}
+
+func (h *DPDKHandle) SendPackets(packets [][]byte) (uint16, error) {
+	if len(packets) == 0 {
+		return 0, nil
+	}
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	mbufs := make([]*C.struct_rte_mbuf, len(packets))
+
+	sent := C.send_packets(C.uint16_t(h.portID),
+		(**C.struct_rte_mbuf)(unsafe.Pointer(&mbufs[0])),
+		C.uint16_t(len(packets)))
+
+	return uint16(sent), nil
 }
 
 func (h *DPDKHandle) IsPortUp() bool {

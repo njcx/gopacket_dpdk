@@ -138,7 +138,7 @@ uint16_t get_nb_ports(void) {
 
 int get_port_status(uint16_t port_id) {
     struct rte_eth_link link;
-    int ret = rte_eth_link_get_nowait(port_id, &link);
+    int ret = rte_eth_link_get(port_id, &link);
     if (ret < 0) return ret;
     return link.link_status ? 1 : 0;
 }
@@ -153,8 +153,15 @@ void print_port_info(uint16_t port_id) {
         return;
     }
 
-    rte_eth_link_get_nowait(port_id, &link);
-    rte_eth_stats_get(port_id, &stats);
+    if (rte_eth_link_get(port_id, &link) != 0) {
+        printf("Failed to get link info\n");
+        return;
+    }
+
+    if (rte_eth_stats_get(port_id, &stats) != 0) {
+        printf("Failed to get port statistics\n");
+        return;
+    }
 
     printf("\nPort %u information:\n", port_id);
     printf("Driver name: %s\n", dev_info.driver_name);
