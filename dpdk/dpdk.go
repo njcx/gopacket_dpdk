@@ -17,23 +17,23 @@ const (
 )
 
 type BandwidthStats struct {
-	RxBytesPerSecond   float64 // 接收带宽 (bytes/s)
-	TxBytesPerSecond   float64 // 发送带宽 (bytes/s)
-	RxPacketsPerSecond float64 // 接收包速率 (packets/s)
-	TxPacketsPerSecond float64 // 发送包速率 (packets/s)
+	RxBytesPerSecond   float64 // Received bandwidth (bytes/s)
+	TxBytesPerSecond   float64 // Transmitted bandwidth (bytes/s)
+	RxPacketsPerSecond float64 // Received packet rate (packets/s)
+	TxPacketsPerSecond float64 // Transmitted packet rate (packets/s)
 	Timestamp          time.Time
 }
 
 type PacketLossStats struct {
-	RxDropped    uint64  // 接收丢包数
-	TxDropped    uint64  // 发送丢包数
-	RxErrors     uint64  // 接收错误数
-	TxErrors     uint64  // 发送错误数
-	RxLossRate   float64 // 接收丢包率 (百分比)
-	TxLossRate   float64 // 发送丢包率 (百分比)
-	RxErrorRate  float64 // 接收错误率 (百分比)
-	TxErrorRate  float64 // 发送错误率 (百分比)
-	TotalPackets uint64  // 总包数
+	RxDropped    uint64  // Number of received dropped packets
+	TxDropped    uint64  // Number of transmitted dropped packets
+	RxErrors     uint64  // Number of received errors
+	TxErrors     uint64  // Number of transmitted errors
+	RxLossRate   float64 // Received packet loss rate (percentage)
+	TxLossRate   float64 // Transmitted packet loss rate (percentage)
+	RxErrorRate  float64 // Received error rate (percentage)
+	TxErrorRate  float64 // Transmitted error rate (percentage)
+	TotalPackets uint64  // Total number of packets
 	Timestamp    time.Time
 }
 
@@ -195,7 +195,7 @@ func (h *DPDKHandle) GetBandwidth() (*BandwidthStats, error) {
 	}
 
 	currentTime := time.Now()
-	
+
 	if h.lastStats == nil {
 		h.lastStats = &C.struct_rte_eth_stats{}
 		*h.lastStats = currentStats

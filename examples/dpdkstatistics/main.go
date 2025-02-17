@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/njcx/gopacket_dpdk/dpdk"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -44,4 +47,8 @@ func main() {
 		}
 	}()
 
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	<-signalChan
+	fmt.Println("Received shutdown signal, exiting...")
 }
