@@ -115,18 +115,23 @@ func (h *DPDKHandle) ReadPacket() ([]byte, error) {
 		h.currentIdx = 0
 
 		if h.nbRx == 0 {
-			return nil, nil // No packets available
+			return nil, nil
 		}
+	}
+
+	if h.currentIdx < 0 || h.currentIdx >= len(h.mbufs) {
+		return nil, fmt.Errorf("currentIdx out of bounds: %d", h.currentIdx)
 	}
 
 	mbuf := h.mbufs[h.currentIdx]
 	data := C.get_mbuf_data(mbuf)
 	length := C.get_mbuf_data_len(mbuf)
 
+	packet := C.GoBytes(unsafe.Pointer(data), C.int(length))
 	C.free_mbuf(mbuf)
 	h.currentIdx++
 
-	return C.GoBytes(unsafe.Pointer(data), C.int(length)), nil
+	return packet, nil
 }
 
 func (h *DPDKHandle) SendPackets(packets [][]byte) (uint16, error) {

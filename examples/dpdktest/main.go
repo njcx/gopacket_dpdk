@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/njcx/gopacket_dpdk"
 	"github.com/njcx/gopacket_dpdk/dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func main() {
 	}
 
 	fmt.Println("Starting packet capture...")
-	for i := 0; i < 100; i++ {
+	for {
 		packet, err := handle.ReadPacket()
 		if err != nil {
 			fmt.Printf("Error reading packet: %v\n", err)

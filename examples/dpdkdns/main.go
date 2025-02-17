@@ -14,17 +14,17 @@ func processPacket(data []byte) {
 	ethernetLayer := packet.Layer(layers.LayerTypeEthernet)
 	if ethernetLayer != nil {
 		eth, _ := ethernetLayer.(*layers.Ethernet)
-		fmt.Printf("源MAC: %s, 目标MAC: %s\n", eth.SrcMAC, eth.DstMAC)
+		fmt.Printf("Source MAC: %s, Destination MAC: %s\n", eth.SrcMAC, eth.DstMAC)
 	}
-	// 解析IP层
+	// Parse IP layer
 	ipLayer := packet.Layer(layers.LayerTypeIPv4)
 	if ipLayer != nil {
 		ip, ok := ipLayer.(*layers.IPv4)
 		if !ok {
-			fmt.Println("无法解析IPv4层")
+			fmt.Println("Failed to parse IPv4 layer")
 			return
 		}
-		fmt.Printf("源IP: %s, 目标IP: %s\n", ip.SrcIP, ip.DstIP)
+		fmt.Printf("Source IP: %s, Destination IP: %s\n", ip.SrcIP, ip.DstIP)
 	}
 
 	var resultDataList []map[string]string
@@ -33,7 +33,7 @@ func processPacket(data []byte) {
 	if dnsLayer != nil {
 		dns, ok := dnsLayer.(*layers.DNS)
 		if !ok {
-			fmt.Println("无法解析DNS层")
+			fmt.Println("Failed to parse DNS layer")
 			return
 		}
 		if !dns.QR {
@@ -56,18 +56,18 @@ func processPacket(data []byte) {
 }
 
 func main() {
-	// 初始化DPDK
+	// Initialize DPDK
 	if os.Geteuid() != 0 {
-		log.Fatal(" 需要root权限执行")
+		log.Fatal("Root permission is required to execute")
 	}
 	if err := dpdk.InitDPDK(); err != nil {
-		log.Fatalf("初始化DPDK失败: %v", err)
+		log.Fatalf("Failed to initialize DPDK: %v", err)
 	}
 	handle, err := dpdk.NewDPDKHandle(0, "udp and port 53")
 	if err != nil {
-		log.Fatalf("创建DPDK处理器失败: %v", err)
+		log.Fatalf("Failed to create DPDK handler: %v", err)
 	}
 	defer handle.Close()
-	// 开始接收和处理数据包
-	handle.ReceivePackets(processPacket)
+	// Start receiving and processing packets
+	handle.ReceivePacketsCallBack(processPacket)
 }
