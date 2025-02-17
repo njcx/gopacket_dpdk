@@ -26,7 +26,7 @@ func main() {
 
 	fmt.Println("Starting packet capture...")
 	for {
-		packet, err := handle.ReadPacket()
+		packet, _, err := handle.ReadPacketData()
 		if err != nil {
 			fmt.Printf("Error reading packet: %v\n", err)
 			continue

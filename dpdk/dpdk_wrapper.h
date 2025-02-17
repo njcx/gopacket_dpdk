@@ -33,6 +33,7 @@ void* get_mbuf_data(struct rte_mbuf* mbuf);
 
 uint16_t get_mbuf_data_len(struct rte_mbuf* mbuf);
 
+uint16_t get_mbuf_pkt_len(struct rte_mbuf* mbuf);
 void free_mbuf(struct rte_mbuf* mbuf);
 
 #endif

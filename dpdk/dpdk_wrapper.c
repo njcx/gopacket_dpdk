@@ -127,6 +127,11 @@ uint16_t get_mbuf_data_len(struct rte_mbuf* mbuf) {
     return rte_pktmbuf_data_len(mbuf);
 }
 
+uint16_t get_mbuf_pkt_len(struct rte_mbuf* mbuf) {
+    return rte_pktmbuf_pkt_len(mbuf);
+}
+
+
 void free_mbuf(struct rte_mbuf* mbuf) {
     rte_pktmbuf_free(mbuf);
 }

@@ -7,6 +7,8 @@ package dpdk
 import "C"
 import (
 	"fmt"
+	"github.com/njcx/gopacket_dpdk"
+	"github.com/njcx/gopacket_dpdk/layers"
 	"sync"
 	"time"
 	"unsafe"
@@ -128,7 +130,7 @@ func (h *DPDKHandle) ReceivePacketsCallBack(callback func([]byte)) {
 	}
 }
 
-func (h *DPDKHandle) ReadPacket() ([]byte, error) {
+func (h *DPDKHandle) ReadPacketData() ([]byte, gopacket_dpdk.CaptureInfo, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -140,12 +142,12 @@ func (h *DPDKHandle) ReadPacket() ([]byte, error) {
 		h.currentIdx = 0
 
 		if h.nbRx == 0 {
-			return nil, nil
+			return nil, gopacket_dpdk.CaptureInfo{}, nil
 		}
 	}
 
 	if h.currentIdx < 0 || h.currentIdx >= len(h.mbufs) {
-		return nil, fmt.Errorf("currentIdx out of bounds: %d", h.currentIdx)
+		return nil, gopacket_dpdk.CaptureInfo{}, fmt.Errorf("currentIdx out of bounds: %d", h.currentIdx)
 	}
 
 	mbuf := h.mbufs[h.currentIdx]
@@ -153,10 +155,22 @@ func (h *DPDKHandle) ReadPacket() ([]byte, error) {
 	length := C.get_mbuf_data_len(mbuf)
 
 	packet := C.GoBytes(unsafe.Pointer(data), C.int(length))
+	totalLength := int(C.get_mbuf_pkt_len(mbuf))
+
+	captureInfo := gopacket_dpdk.CaptureInfo{
+		Timestamp:     time.Now(), // Current timestamp when packet is captured
+		CaptureLength: len(packet),
+		Length:        totalLength,
+	}
+
 	C.free_mbuf(mbuf)
 	h.currentIdx++
 
-	return packet, nil
+	return packet, captureInfo, nil
+}
+
+func (h *DPDKHandle) LinkType() layers.LinkType {
+	return layers.LinkTypeEthernet
 }
 
 func (h *DPDKHandle) SendPackets(packets [][]byte) (uint16, error) {
