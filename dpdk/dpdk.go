@@ -264,19 +264,21 @@ func (h *DPDKHandle) GetPacketLoss() (*PacketLossStats, error) {
 	rxErrors := uint64(currentStats.ierrors)
 	txErrors := uint64(currentStats.oerrors)
 
-	totalPackets := totalRxPackets + totalTxPackets
+	totalRxAttempted := totalRxPackets + rxDropped + rxErrors
+	totalTxAttempted := totalTxPackets + txDropped + txErrors
+
 	rxLossRate := float64(0)
 	txLossRate := float64(0)
 	rxErrorRate := float64(0)
 	txErrorRate := float64(0)
 
-	if totalRxPackets > 0 {
-		rxLossRate = float64(rxDropped) / float64(totalRxPackets) * 100
-		rxErrorRate = float64(rxErrors) / float64(totalRxPackets) * 100
+	if totalRxAttempted > 0 {
+		rxLossRate = float64(rxDropped) / float64(totalRxAttempted) * 100
+		rxErrorRate = float64(rxErrors) / float64(totalRxAttempted) * 100
 	}
-	if totalTxPackets > 0 {
-		txLossRate = float64(txDropped) / float64(totalTxPackets) * 100
-		txErrorRate = float64(txErrors) / float64(totalTxPackets) * 100
+	if totalTxAttempted > 0 {
+		txLossRate = float64(txDropped) / float64(totalTxAttempted) * 100
+		txErrorRate = float64(txErrors) / float64(totalTxAttempted) * 100
 	}
 
 	stats := &PacketLossStats{
@@ -288,7 +290,7 @@ func (h *DPDKHandle) GetPacketLoss() (*PacketLossStats, error) {
 		TxLossRate:   txLossRate,
 		RxErrorRate:  rxErrorRate,
 		TxErrorRate:  txErrorRate,
-		TotalPackets: totalPackets,
+		TotalPackets: totalRxPackets + totalTxPackets,
 		Timestamp:    currentTime,
 	}
 
@@ -305,11 +307,11 @@ func (h *DPDKHandle) PrintPacketLoss() error {
 	}
 
 	fmt.Printf("\nPacket Loss Statistics (at %s):\n", stats.Timestamp.Format("2006-01-02 15:04:05"))
-	fmt.Printf("Total Packets: %d\n", stats.TotalPackets)
-	fmt.Printf("RX Dropped: %d (%.2f%%)\n", stats.RxDropped, stats.RxLossRate)
-	fmt.Printf("TX Dropped: %d (%.2f%%)\n", stats.TxDropped, stats.TxLossRate)
-	fmt.Printf("RX Errors: %d (%.2f%%)\n", stats.RxErrors, stats.RxErrorRate)
-	fmt.Printf("TX Errors: %d (%.2f%%)\n", stats.TxErrors, stats.TxErrorRate)
+	fmt.Printf("Total Packets Processed: %d\n", stats.TotalPackets)
+	fmt.Printf("RX Dropped: %d (%.2f%% of total received)\n", stats.RxDropped, stats.RxLossRate)
+	fmt.Printf("TX Dropped: %d (%.2f%% of total transmitted)\n", stats.TxDropped, stats.TxLossRate)
+	fmt.Printf("RX Errors: %d (%.2f%% of total received)\n", stats.RxErrors, stats.RxErrorRate)
+	fmt.Printf("TX Errors: %d (%.2f%% of total transmitted)\n", stats.TxErrors, stats.TxErrorRate)
 
 	return nil
 }
