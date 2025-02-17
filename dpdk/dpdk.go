@@ -44,6 +44,7 @@ func InitDPDK() error {
 func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 	handle := &DPDKHandle{
 		portID:    portID,
+		mbufs:     make([]*C.struct_rte_mbuf, BURST_SIZE),
 		bpfFilter: &C.dpdk_bpf_filter{},
 	}
 	if bpfExpression != "" {
