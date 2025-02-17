@@ -8,6 +8,7 @@ import "C"
 import (
 	"fmt"
 	"sync"
+	"time"
 	"unsafe"
 )
 
@@ -15,14 +16,37 @@ const (
 	BURST_SIZE = 32
 )
 
+type BandwidthStats struct {
+	RxBytesPerSecond   float64 // 接收带宽 (bytes/s)
+	TxBytesPerSecond   float64 // 发送带宽 (bytes/s)
+	RxPacketsPerSecond float64 // 接收包速率 (packets/s)
+	TxPacketsPerSecond float64 // 发送包速率 (packets/s)
+	Timestamp          time.Time
+}
+
+type PacketLossStats struct {
+	RxDropped    uint64  // 接收丢包数
+	TxDropped    uint64  // 发送丢包数
+	RxErrors     uint64  // 接收错误数
+	TxErrors     uint64  // 发送错误数
+	RxLossRate   float64 // 接收丢包率 (百分比)
+	TxLossRate   float64 // 发送丢包率 (百分比)
+	RxErrorRate  float64 // 接收错误率 (百分比)
+	TxErrorRate  float64 // 发送错误率 (百分比)
+	TotalPackets uint64  // 总包数
+	Timestamp    time.Time
+}
+
 type DPDKHandle struct {
-	portID      uint16
-	bpfFilter   *C.dpdk_bpf_filter
-	Initialized bool
-	mbufs       []*C.struct_rte_mbuf
-	currentIdx  int
-	nbRx        int
-	mu          sync.Mutex
+	portID        uint16
+	bpfFilter     *C.dpdk_bpf_filter
+	Initialized   bool
+	mbufs         []*C.struct_rte_mbuf
+	currentIdx    int
+	nbRx          int
+	mu            sync.Mutex
+	lastStats     *C.struct_rte_eth_stats
+	lastStatsTime time.Time
 }
 
 func InitDPDK() error {
@@ -159,4 +183,133 @@ func (h *DPDKHandle) IsPortUp() bool {
 
 func (h *DPDKHandle) PrintInfo() {
 	C.print_port_info(C.uint16_t(h.portID))
+}
+
+func (h *DPDKHandle) GetBandwidth() (*BandwidthStats, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	var currentStats C.struct_rte_eth_stats
+	if ret := C.rte_eth_stats_get(C.uint16_t(h.portID), &currentStats); ret != 0 {
+		return nil, fmt.Errorf("failed to get port statistics: %d", ret)
+	}
+
+	currentTime := time.Now()
+	
+	if h.lastStats == nil {
+		h.lastStats = &C.struct_rte_eth_stats{}
+		*h.lastStats = currentStats
+		h.lastStatsTime = currentTime
+		return &BandwidthStats{
+			Timestamp: currentTime,
+		}, nil
+	}
+
+	duration := currentTime.Sub(h.lastStatsTime).Seconds()
+	if duration == 0 {
+		return nil, fmt.Errorf("too frequent calls to GetBandwidth")
+	}
+
+	stats := &BandwidthStats{
+		RxBytesPerSecond:   float64(currentStats.ibytes-h.lastStats.ibytes) / duration,
+		TxBytesPerSecond:   float64(currentStats.obytes-h.lastStats.obytes) / duration,
+		RxPacketsPerSecond: float64(currentStats.ipackets-h.lastStats.ipackets) / duration,
+		TxPacketsPerSecond: float64(currentStats.opackets-h.lastStats.opackets) / duration,
+		Timestamp:          currentTime,
+	}
+
+	*h.lastStats = currentStats
+	h.lastStatsTime = currentTime
+
+	return stats, nil
+}
+
+func (h *DPDKHandle) PrintBandwidth() error {
+	stats, err := h.GetBandwidth()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\nBandwidth Statistics (at %s):\n", stats.Timestamp.Format("2006-01-02 15:04:05"))
+	fmt.Printf("RX: %.2f Mbps (%.2f packets/s)\n", stats.RxBytesPerSecond*8/1000000, stats.RxPacketsPerSecond)
+	fmt.Printf("TX: %.2f Mbps (%.2f packets/s)\n", stats.TxBytesPerSecond*8/1000000, stats.TxPacketsPerSecond)
+
+	return nil
+}
+
+func (h *DPDKHandle) GetPacketLoss() (*PacketLossStats, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	var currentStats C.struct_rte_eth_stats
+	if ret := C.rte_eth_stats_get(C.uint16_t(h.portID), &currentStats); ret != 0 {
+		return nil, fmt.Errorf("failed to get port statistics: %d", ret)
+	}
+
+	currentTime := time.Now()
+
+	if h.lastStats == nil {
+		h.lastStats = &C.struct_rte_eth_stats{}
+		*h.lastStats = currentStats
+		h.lastStatsTime = currentTime
+		return &PacketLossStats{
+			Timestamp: currentTime,
+		}, nil
+	}
+
+	totalRxPackets := uint64(currentStats.ipackets)
+	totalTxPackets := uint64(currentStats.opackets)
+	rxDropped := uint64(currentStats.imissed + currentStats.rx_nombuf)
+	txDropped := uint64(currentStats.oerrors)
+	rxErrors := uint64(currentStats.ierrors)
+	txErrors := uint64(currentStats.oerrors)
+
+	totalPackets := totalRxPackets + totalTxPackets
+	rxLossRate := float64(0)
+	txLossRate := float64(0)
+	rxErrorRate := float64(0)
+	txErrorRate := float64(0)
+
+	if totalRxPackets > 0 {
+		rxLossRate = float64(rxDropped) / float64(totalRxPackets) * 100
+		rxErrorRate = float64(rxErrors) / float64(totalRxPackets) * 100
+	}
+	if totalTxPackets > 0 {
+		txLossRate = float64(txDropped) / float64(totalTxPackets) * 100
+		txErrorRate = float64(txErrors) / float64(totalTxPackets) * 100
+	}
+
+	stats := &PacketLossStats{
+		RxDropped:    rxDropped,
+		TxDropped:    txDropped,
+		RxErrors:     rxErrors,
+		TxErrors:     txErrors,
+		RxLossRate:   rxLossRate,
+		TxLossRate:   txLossRate,
+		RxErrorRate:  rxErrorRate,
+		TxErrorRate:  txErrorRate,
+		TotalPackets: totalPackets,
+		Timestamp:    currentTime,
+	}
+
+	*h.lastStats = currentStats
+	h.lastStatsTime = currentTime
+
+	return stats, nil
+}
+
+func (h *DPDKHandle) PrintPacketLoss() error {
+	stats, err := h.GetPacketLoss()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\nPacket Loss Statistics (at %s):\n", stats.Timestamp.Format("2006-01-02 15:04:05"))
+	fmt.Printf("Total Packets: %d\n", stats.TotalPackets)
+	fmt.Printf("RX Dropped: %d (%.2f%%)\n", stats.RxDropped, stats.RxLossRate)
+	fmt.Printf("TX Dropped: %d (%.2f%%)\n", stats.TxDropped, stats.TxLossRate)
+	fmt.Printf("RX Errors: %d (%.2f%%)\n", stats.RxErrors, stats.RxErrorRate)
+	fmt.Printf("TX Errors: %d (%.2f%%)\n", stats.TxErrors, stats.TxErrorRate)
+
+	return nil
 }
