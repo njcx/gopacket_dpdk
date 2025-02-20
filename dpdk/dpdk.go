@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/njcx/gopacket_dpdk"
 	"github.com/njcx/gopacket_dpdk/layers"
+	"runtime"
 	"sync"
 	"time"
 	"unsafe"
@@ -52,6 +53,7 @@ type DPDKHandle struct {
 }
 
 func InitDPDK(args []string) error {
+	runtime.LockOSThread()
 
 	if len(args) == 0 {
 		args = []string{""}
@@ -66,6 +68,11 @@ func InitDPDK(args []string) error {
 	if ret < 0 {
 		return fmt.Errorf("DPDK initialization failed: %d", ret)
 	}
+
+	runtime.SetFinalizer(struct{}{}, func(interface{}) {
+		C.cleanup_dpdk()
+		runtime.UnlockOSThread()
+	})
 	return nil
 
 }
@@ -102,6 +109,8 @@ func (h *DPDKHandle) Close() {
 		C.cleanup_dpdk()
 		h.Initialized = false
 	}
+
+	runtime.UnlockOSThread()
 
 }
 
