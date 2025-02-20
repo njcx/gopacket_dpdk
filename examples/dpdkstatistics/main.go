@@ -11,7 +11,17 @@ import (
 
 func main() {
 	// Initialize DPDK
-	if err := dpdk.InitDPDK(); err != nil {
+
+	args := []string{
+		"dpdk_app_s",
+		"-l", "0-3",
+		"-n", "4",
+		"--proc-type=auto",
+		"--file-prefix=dpdk_status_",
+		"--huge-dir", "/dev/hugepages",
+	}
+
+	if err := dpdk.InitDPDK(args); err != nil {
 		panic(fmt.Sprintf("Failed to initialize DPDK: %v", err))
 	}
 

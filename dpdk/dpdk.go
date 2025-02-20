@@ -51,8 +51,11 @@ type DPDKHandle struct {
 	lastStatsTime time.Time
 }
 
-func InitDPDK() error {
-	args := []string{""}
+func InitDPDK(args []string) error {
+
+	if len(args) == 0 {
+		args = []string{""}
+	}
 	argc := C.int(len(args))
 	cargs := make([]*C.char, len(args))
 	for i, arg := range args {

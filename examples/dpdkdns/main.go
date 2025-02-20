@@ -60,7 +60,17 @@ func main() {
 	if os.Geteuid() != 0 {
 		log.Fatal("Root permission is required to execute")
 	}
-	if err := dpdk.InitDPDK(); err != nil {
+
+	args := []string{
+		"dpdk_app_dns",
+		"-l", "0-3",
+		"-n", "4",
+		"--proc-type=auto",
+		"--file-prefix=dpdk_dns_",
+		"--huge-dir", "/dev/hugepages",
+	}
+
+	if err := dpdk.InitDPDK(args); err != nil {
 		log.Fatalf("Failed to initialize DPDK: %v", err)
 	}
 	handle, err := dpdk.NewDPDKHandle(0, "udp and port 53")
