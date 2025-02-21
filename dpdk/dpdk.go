@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/njcx/gopacket_dpdk"
 	"github.com/njcx/gopacket_dpdk/layers"
-	"runtime"
 	"sync"
 	"time"
 	"unsafe"
@@ -17,6 +16,11 @@ import (
 
 const (
 	BURST_SIZE = 32
+)
+
+var (
+	initializedOnce sync.Once
+	dpdkMutex       sync.Mutex
 )
 
 type BandwidthStats struct {
@@ -53,27 +57,33 @@ type DPDKHandle struct {
 }
 
 func InitDPDK(args []string) error {
-	runtime.LockOSThread()
 
-	if len(args) == 0 {
-		args = []string{""}
-	}
-	argc := C.int(len(args))
-	cargs := make([]*C.char, len(args))
-	for i, arg := range args {
-		cargs[i] = C.CString(arg)
-		defer C.free(unsafe.Pointer(cargs[i]))
-	}
-	ret := C.init_dpdk(argc, (**C.char)(&cargs[0]))
-	if ret < 0 {
-		return fmt.Errorf("DPDK initialization failed: %d", ret)
-	}
+	var initErr error
+	initializedOnce.Do(func() {
+		dpdkMutex.Lock()
+		defer dpdkMutex.Unlock()
 
-	runtime.SetFinalizer(struct{}{}, func(interface{}) {
-		C.cleanup_dpdk()
-		runtime.UnlockOSThread()
+		now := time.Now().UTC().Format("2006-01-02 15:04:05")
+		fmt.Printf("[%s] Initializing DPDK...\n", now)
+
+		if len(args) == 0 {
+			args = []string{"gopacket_dpdk"}
+		}
+		argc := C.int(len(args))
+		cargs := make([]*C.char, len(args))
+		for i, arg := range args {
+			cargs[i] = C.CString(arg)
+			defer C.free(unsafe.Pointer(cargs[i]))
+		}
+		ret := C.init_dpdk(argc, (**C.char)(&cargs[0]))
+		if ret < 0 {
+			initErr = fmt.Errorf("DPDK initialization failed: %d", ret)
+			return
+		}
+		fmt.Printf("[%s] DPDK initialization successful\n", now)
 	})
-	return nil
+
+	return initErr
 
 }
 
@@ -101,6 +111,9 @@ func NewDPDKHandle(portID uint16, bpfExpression string) (*DPDKHandle, error) {
 }
 
 func (h *DPDKHandle) Close() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
 	if h.bpfFilter != nil {
 		C.free_bpf_filter(h.bpfFilter)
 	}
@@ -109,8 +122,6 @@ func (h *DPDKHandle) Close() {
 		C.cleanup_dpdk()
 		h.Initialized = false
 	}
-
-	runtime.UnlockOSThread()
 
 }
 
