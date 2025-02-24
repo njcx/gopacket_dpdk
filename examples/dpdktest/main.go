@@ -23,7 +23,7 @@ func main() {
 		panic(fmt.Sprintf("Failed to initialize DPDK: %v", err))
 	}
 
-	handle, err := dpdk.NewDPDKHandle(0, "")
+	handle, err := dpdk.NewDPDKHandle(0)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create DPDK handle: %v", err))
 	}

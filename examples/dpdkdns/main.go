@@ -73,7 +73,9 @@ func main() {
 	if err := dpdk.InitDPDK(args); err != nil {
 		log.Fatalf("Failed to initialize DPDK: %v", err)
 	}
-	handle, err := dpdk.NewDPDKHandle(0, "udp and port 53")
+	handle, err := dpdk.NewDPDKHandle(0)
+
+	handle.SetBPFFilter("udp and port 53")
 	if err != nil {
 		log.Fatalf("Failed to create DPDK handler: %v", err)
 	}

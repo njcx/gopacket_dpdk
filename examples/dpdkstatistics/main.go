@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Create a new DPDK handle for the first port
-	handle, err := dpdk.NewDPDKHandle(0, "")
+	handle, err := dpdk.NewDPDKHandle(0)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create DPDK handle: %v", err))
 	}
