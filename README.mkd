@@ -25,11 +25,10 @@ Debian + Ubuntu
 #  tar -Jxvf dpdk-20.11.10.tar.xz
 #  cd dpdk-stable-20.11.10 && meson build && cd build && ninja && ninja install
 #  export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH
-#  git clone https://github.com/njcx/dpdk-kmods
-#  cd dpdk-kmods && make
+#  git clone git://dpdk.org/dpdk-kmods && cd  dpdk-kmods/linux/igb_uio
+#  make
 #  modprobe uio  &&  insmod igb_uio.ko
-#  /xxx/dpdk-stable-20.11.10/usertools/dpdk-devbind.py -b igb_uio 0000:03:00.0(pci-)
+#  dpdk-devbind.py -b igb_uio 0000:03:00.0(pci-addr)
 #  CGO_CFLAGS="-msse4.2 -fno-strict-aliasing " CGO_LDFLAGS=" -lrte_eal -lrte_mbuf -lrte_mempool -lrte_ethdev -lpcap" go build
-
 
 ```
